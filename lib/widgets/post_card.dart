@@ -2,26 +2,72 @@ import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:madadgar/config/theme.dart';
 import 'package:madadgar/models/post.dart';
+import 'package:madadgar/screens/post/post_detail_screen.dart';
+import 'package:madadgar/services/post_service.dart';
+import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class PostCard extends StatelessWidget {
+class PostCard extends StatefulWidget {
   final PostModel post;
   final VoidCallback onTap;
+  final String? currentUserId; // optional
 
   const PostCard({
     super.key,
     required this.post,
     required this.onTap,
+    this.currentUserId, // not required
   });
+
+
+ 
+
+  @override
+  State<PostCard> createState() => _PostCardState();
+}
+
+class _PostCardState extends State<PostCard> {
+  late int _viewCount;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewCount = widget.post.viewCount;
+  }
+
+   
+void _handleTap(BuildContext context) async {
+  final postService = Provider.of<PostService>(context, listen: false);
+  final viewerId = widget.currentUserId ?? FirebaseAuth.instance.currentUser?.uid;
+  
+
+  if (viewerId != null && viewerId != widget.post.userId) {
+    await postService.incrementViewCount(widget.post.id);
+    setState(() {
+      _viewCount++;
+    });
+  }
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => PostDetailScreen(post: widget.post),
+    ),
+  );
+}
+
+
+
 
   @override
   Widget build(BuildContext context) {
+    final post = widget.post;
     final color = post.type == PostType.need
-        ? const Color(0xFFE57373) // Slightly reddish for needs
-        : const Color(0xFF81C784); // Slightly greenish for offers
+        ? const Color(0xFFE57373)
+        : const Color(0xFF81C784);
     final labelText = post.type == PostType.need ? 'NEED' : 'OFFER';
-    final labelIcon = post.type == PostType.need 
-        ? Icons.help_outline 
-        : Icons.volunteer_activism;
+    final labelIcon =
+        post.type == PostType.need ? Icons.help_outline : Icons.volunteer_activism;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -40,11 +86,10 @@ class PostCard extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: onTap,
+          onTap: () => _handleTap(context),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Image section (if available)
               if (post.images.isNotEmpty)
                 SizedBox(
                   height: 160,
@@ -62,14 +107,11 @@ class PostCard extends StatelessWidget {
                     },
                   ),
                 ),
-              
-              // Content section
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header with Type and Category
                     Row(
                       children: [
                         Container(
@@ -119,10 +161,7 @@ class PostCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    
                     const SizedBox(height: 12),
-                    
-                    // Title
                     Text(
                       post.title,
                       style: TextStyle(
@@ -133,10 +172,7 @@ class PostCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    
                     const SizedBox(height: 8),
-                    
-                    // Description
                     Text(
                       post.description.length > 120
                           ? '${post.description.substring(0, 120)}...'
@@ -149,18 +185,11 @@ class PostCard extends StatelessWidget {
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    
                     const SizedBox(height: 16),
-                    
-                    // Divider
                     Divider(height: 1, thickness: 1, color: Colors.grey.shade100),
-                    
                     const SizedBox(height: 16),
-                    
-                    // Footer with User and Location info
                     Row(
                       children: [
-                        // User avatar and name
                         Expanded(
                           child: Row(
                             children: [
@@ -180,29 +209,20 @@ class PostCard extends StatelessWidget {
                             ],
                           ),
                         ),
-                        
-                        // Post stats
                         Row(
                           children: [
-                            _buildStatItem(Icons.visibility_outlined, post.viewCount),
+                            _buildStatItem(Icons.visibility_outlined, _viewCount),
                             const SizedBox(width: 12),
                             _buildStatItem(Icons.chat_bubble_outline_rounded, post.respondCount),
                           ],
                         ),
                       ],
                     ),
-                    
                     const SizedBox(height: 8),
-                    
-                    // Location
                     if (post.region.isNotEmpty)
                       Row(
                         children: [
-                          Icon(
-                            Icons.location_on_outlined,
-                            size: 14, 
-                            color: Colors.grey.shade500,
-                          ),
+                          Icon(Icons.location_on_outlined, size: 14, color: Colors.grey.shade500),
                           const SizedBox(width: 4),
                           Text(
                             post.region,
@@ -222,8 +242,9 @@ class PostCard extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildUserAvatar() {
+    final post = widget.post;
     return Container(
       width: 32,
       height: 32,
@@ -250,15 +271,11 @@ class PostCard extends StatelessWidget {
           : null,
     );
   }
-  
+
   Widget _buildStatItem(IconData icon, int count) {
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 16,
-          color: Colors.grey.shade400,
-        ),
+        Icon(icon, size: 16, color: Colors.grey.shade400),
         const SizedBox(width: 4),
         Text(
           count.toString(),

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 enum PostType { need, offer }
 enum PostStatus { active, fulfilled, closed }
 
@@ -86,6 +88,15 @@ class PostModel {
       rethrow;  // This ensures the error is passed up the call stack
     }
   }
+
+  factory PostModel.fromFirestore(DocumentSnapshot doc) {
+  final data = doc.data() as Map<String, dynamic>;
+  // Make sure the 'id' is the document ID if it's not in the data
+  return PostModel.fromMap({
+    ...data,
+    'id': doc.id,
+  });
+}
   
   static PostStatus _mapStringToStatus(String? status) {
     switch (status) {
@@ -98,36 +109,40 @@ class PostModel {
         return PostStatus.active;
     }
   }
+
+  
   
   // Copy with new values
   PostModel copyWith({
-    String? title,
-    String? description,
-    String? category,
-    String? region,
-    bool? isAnonymous,
-    List<String>? images,
-    PostStatus? status,
-    int? viewCount,
-    int? respondCount, required String id,
-  }) {
-    return PostModel(
-      id: this.id,
-      userId: userId,
-      userName: userName,
-      userImage: userImage,
-      type: type,
-      title: title ?? this.title,
-      description: description ?? this.description,
-      category: category ?? this.category,
-      region: region ?? this.region,
-      isAnonymous: isAnonymous ?? this.isAnonymous,
-      images: images ?? this.images,
-      status: status ?? this.status,
-      viewCount: viewCount ?? this.viewCount,
-      respondCount: respondCount ?? this.respondCount,
-      createdAt: createdAt,
-      updatedAt: DateTime.now(),
-    );
-  }
+  String? id,
+  String? title,
+  String? description,
+  String? category,
+  String? region,
+  bool? isAnonymous,
+  List<String>? images,
+  PostStatus? status,
+  int? viewCount,
+  int? respondCount,
+}) {
+  return PostModel(
+    id: id ?? this.id,
+    userId: userId,
+    userName: userName,
+    userImage: userImage,
+    type: type,
+    title: title ?? this.title,
+    description: description ?? this.description,
+    category: category ?? this.category,
+    region: region ?? this.region,
+    isAnonymous: isAnonymous ?? this.isAnonymous,
+    images: images ?? this.images,
+    status: status ?? this.status,
+    viewCount: viewCount ?? this.viewCount,
+    respondCount: respondCount ?? this.respondCount,
+    createdAt: createdAt,
+    updatedAt: DateTime.now(),
+  );
+}
+
 }
