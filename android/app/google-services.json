@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "543085921164",
+    "project_id": "madadgar-f2760",
+    "storage_bucket": "madadgar-f2760.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:543085921164:android:fc7f037c90aea586bc8ca9",
+        "android_client_info": {
+          "package_name": "com.example.madadgar"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDXnN5-6mTa8NGx-zunazgcfwX-UmN6yCc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
