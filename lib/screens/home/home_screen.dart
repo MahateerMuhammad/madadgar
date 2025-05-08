@@ -34,41 +34,65 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = MadadgarTheme.primaryColor;
+    final fontFamily = MadadgarTheme.fontFamily;
+    final accentColor = HSLColor.fromColor(primaryColor).withLightness(0.85).toColor();
+    
     return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        title: _currentIndex == 0 
-            ? const Row(
-                children: [
-                 
-                  Text(
-                    AppConstants.appName,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              )
-            : Text(
-                _titles[_currentIndex],
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
+      backgroundColor: Colors.grey[50],
+     appBar: AppBar(
+  backgroundColor: Colors.white,
+  elevation: 0,
+  iconTheme: IconThemeData(color: primaryColor), // Makes drawer/menu icon primary
+  centerTitle: _currentIndex != 0,
+  title: _currentIndex == 0
+      ? Row(
+          children: [
+            Text(
+              AppConstants.appName,
+              style: TextStyle(
+                fontFamily: fontFamily,
+                color: primaryColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
               ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: _showSearchDialog,
+            ),
+          ],
+        )
+      : Text(
+          _titles[_currentIndex],
+          style: TextStyle(
+            fontFamily: fontFamily,
+            color: primaryColor,
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
           ),
-        ],
-      ),
-      drawer: _buildNavigationDrawer(),
+        ),
+  actions: [
+    IconButton(
+      icon: Icon(Icons.chat_bubble_outline, color: primaryColor),
+      onPressed: () {
+        // Navigate to chat screen or show dialog
+        // Example: Navigator.pushNamed(context, '/chat');
+      },
+    ),
+  ],
+  bottom: PreferredSize(
+    preferredSize: Size.fromHeight(1.0),
+    child: Container(
+      height: 1.0,
+      color: Colors.grey.withOpacity(0.2),
+    ),
+  ),
+),
+
+      drawer: _buildNavigationDrawer(fontFamily, primaryColor, accentColor),
       body: _screens[_currentIndex],
       floatingActionButton: (_currentIndex == 0 || _currentIndex == 1)
           ? FloatingActionButton(
-              backgroundColor: MadadgarTheme.primaryColor,
+              backgroundColor: primaryColor,
               elevation: 4,
-              child: const Icon(Icons.add),
+              child: const Icon(Icons.add, color: Colors.white),
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => CreatePostScreen()),
@@ -83,11 +107,22 @@ class _HomeScreenState extends State<HomeScreen> {
             _currentIndex = index;
           });
         },
-        selectedItemColor: MadadgarTheme.primaryColor,
+        selectedItemColor: primaryColor,
         unselectedItemColor: Colors.grey,
+        selectedLabelStyle: TextStyle(
+          fontFamily: fontFamily,
+          fontWeight: FontWeight.w600,
+          fontSize: 12,
+        ),
+        unselectedLabelStyle: TextStyle(
+          fontFamily: fontFamily,
+          fontSize: 12,
+        ),
         showSelectedLabels: true,
         showUnselectedLabels: true,
         type: BottomNavigationBarType.fixed,
+        elevation: 8,
+        backgroundColor: Colors.white,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Feed'),
           BottomNavigationBarItem(icon: Icon(Icons.location_on_outlined), activeIcon: Icon(Icons.location_on), label: 'Nearby'),
@@ -98,35 +133,51 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildNavigationDrawer() {
+  Widget _buildNavigationDrawer(String fontFamily, Color primaryColor, Color accentColor) {
     final user = Provider.of<AuthService>(context).currentUser;
     
     return Drawer(
       child: Column(
         children: [
           UserAccountsDrawerHeader(
-            decoration: const BoxDecoration(
-              color: MadadgarTheme.primaryColor,
+            decoration: BoxDecoration(
+              color: primaryColor,
             ),
             accountName: Text(
               user?.name ?? 'User Name',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontFamily: fontFamily,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
             ),
-            accountEmail: Text(user?.email ?? 'user@example.com'),
-            currentAccountPicture: const CircleAvatar(
+            accountEmail: Text(
+              user?.email ?? 'user@example.com',
+              style: TextStyle(
+                fontFamily: fontFamily,
+                fontSize: 14,
+              ),
+            ),
+            currentAccountPicture: CircleAvatar(
               backgroundColor: Colors.white,
               child: Icon(
                 Icons.person,
                 size: 40,
-                color: MadadgarTheme.primaryColor,
+                color: primaryColor,
               ),
             ),
           ),
          
           const Divider(),
           ListTile(
-            leading: const Icon(Icons.post_add),
-            title: const Text('Create New Post'),
+            leading: Icon(Icons.post_add, color: primaryColor),
+            title: Text(
+              'Create New Post',
+              style: TextStyle(
+                fontFamily: fontFamily,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
             onTap: () {
               Navigator.pop(context);
               Navigator.of(context).push(
@@ -135,16 +186,28 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.settings),
-            title: const Text('Settings'),
+            leading: Icon(Icons.settings, color: Colors.grey[700]),
+            title: Text(
+              'Settings',
+              style: TextStyle(
+                fontFamily: fontFamily,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
             onTap: () {
               Navigator.pop(context);
               // Navigate to settings
             },
           ),
           ListTile(
-            leading: const Icon(Icons.help_outline),
-            title: const Text('Help & Support'),
+            leading: Icon(Icons.help_outline, color: Colors.grey[700]),
+            title: Text(
+              'Help & Support',
+              style: TextStyle(
+                fontFamily: fontFamily,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
             onTap: () {
               Navigator.pop(context);
               // Navigate to help
@@ -152,8 +215,14 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const Divider(),
           ListTile(
-            leading: const Icon(Icons.info_outline),
-            title: const Text('About'),
+            leading: Icon(Icons.info_outline, color: Colors.grey[700]),
+            title: Text(
+              'About',
+              style: TextStyle(
+                fontFamily: fontFamily,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
             onTap: () {
               Navigator.pop(context);
               _showAboutDialog();
@@ -163,7 +232,14 @@ class _HomeScreenState extends State<HomeScreen> {
           const Divider(),
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text('Logout', style: TextStyle(color: Colors.red)),
+            title: Text(
+              'Logout', 
+              style: TextStyle(
+                color: Colors.red,
+                fontFamily: fontFamily,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
             onTap: () async {
               Navigator.pop(context);
               final authService = Provider.of<AuthService>(context, listen: false);
@@ -178,23 +254,40 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showSearchDialog() {
+    final primaryColor = MadadgarTheme.primaryColor;
+    final fontFamily = MadadgarTheme.fontFamily;
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        title: const Text('Search'),
+        title: Text(
+          'Search',
+          style: TextStyle(
+            fontFamily: fontFamily,
+            color: primaryColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         content: TextField(
+          style: TextStyle(fontFamily: fontFamily),
           decoration: InputDecoration(
             hintText: 'Search for needs or offers...',
-            prefixIcon: const Icon(Icons.search),
+            hintStyle: TextStyle(fontFamily: fontFamily),
+            prefixIcon: Icon(Icons.search, color: primaryColor),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(30),
               borderSide: BorderSide(color: Colors.grey.shade300),
             ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30),
+              borderSide: BorderSide(color: primaryColor, width: 2),
+            ),
             filled: true,
-            fillColor: Colors.grey.shade100,
+            fillColor: Colors.grey.shade50,
+            contentPadding: EdgeInsets.symmetric(vertical: 12),
           ),
           onSubmitted: (value) {
             Navigator.pop(context);
@@ -203,17 +296,33 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         actions: [
           TextButton(
-            child: const Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                fontFamily: fontFamily,
+                color: Colors.grey[700],
+              ),
+            ),
             onPressed: () => Navigator.pop(context),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: MadadgarTheme.primaryColor,
+              backgroundColor: primaryColor,
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
+              elevation: 2,
             ),
-            child: const Text('Search', style: TextStyle(color: Colors.white)),
+            child: Text(
+              'Search', 
+              style: TextStyle(
+                fontFamily: fontFamily,
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             onPressed: () {
               Navigator.pop(context);
               // Handle search or navigate to search results screen
@@ -225,31 +334,62 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showAboutDialog() {
+    final primaryColor = MadadgarTheme.primaryColor;
+    final fontFamily = MadadgarTheme.fontFamily;
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.volunteer_activism, color: MadadgarTheme.primaryColor),
+            Icon(Icons.volunteer_activism, color: primaryColor),
             SizedBox(width: 8),
-            Text(AppConstants.appName),
+            Text(
+              AppConstants.appName,
+              style: TextStyle(
+                fontFamily: fontFamily,
+                color: primaryColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
-        content: const Column(
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Version 1.0.0'),
+            Text(
+              'Version 1.0.0',
+              style: TextStyle(
+                fontFamily: fontFamily,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[800],
+              ),
+            ),
             SizedBox(height: 16),
-            Text('${AppConstants.appName} is a platform connecting people who need help with volunteers willing to provide assistance.'),
+            Text(
+              '${AppConstants.appName} is a platform connecting people who need help with volunteers willing to provide assistance.',
+              style: TextStyle(
+                fontFamily: fontFamily,
+                height: 1.4,
+                color: Colors.grey[700],
+              ),
+            ),
           ],
         ),
         actions: [
           TextButton(
-            child: const Text('Close'),
+            child: Text(
+              'Close',
+              style: TextStyle(
+                fontFamily: fontFamily,
+                color: primaryColor,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             onPressed: () => Navigator.pop(context),
           ),
         ],
