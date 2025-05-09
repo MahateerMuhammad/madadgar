@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:madadgar/config/constants.dart';
 import 'package:madadgar/models/user.dart';
+import 'package:provider/provider.dart';
 
 class AuthService extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -16,6 +17,41 @@ class AuthService extends ChangeNotifier {
     _auth.authStateChanges().listen(_onAuthStateChanged);
   }
   
+ 
+  // This method should be called from a widget that has context
+  static void refreshAuthServiceUser(BuildContext context) {
+    // Access AuthService using Provider
+    final authService = Provider.of<AuthService>(context, listen: false);
+    
+    // Call the refresh method on AuthService
+    authService.refreshCurrentUser();
+  }
+
+  // Add this method to your AuthService class
+  Future<void> refreshCurrentUser() async {
+    try {
+      final User? firebaseUser = FirebaseAuth.instance.currentUser;
+      
+      if (firebaseUser != null) {
+        // Get latest user data from Firestore
+        final docSnapshot = await FirebaseFirestore.instance
+            .collection(AppConstants.usersCollection)
+            .doc(firebaseUser.uid)
+            .get();
+        
+        if (docSnapshot.exists) {
+          // Update the current user with new data
+          _currentUser = UserModel.fromMap(docSnapshot.data()!);
+          
+          // This is crucial - it tells all listening widgets to rebuild
+          notifyListeners();
+        }
+      }
+    } catch (e) {
+      print('Error refreshing user data: $e');
+    }
+  }
+ 
   // Auth state change handler
   Future<void> _onAuthStateChanged(User? firebaseUser) async {
     if (firebaseUser == null) {
@@ -102,7 +138,7 @@ class AuthService extends ChangeNotifier {
         password: password,
       );
       
-       await Future.delayed(const Duration(seconds: 1));
+      await Future.delayed(const Duration(seconds: 1));
       // _onAuthStateChanged will handle loading the user
       if (_currentUser == null) {
         throw Exception('Failed to load user data');

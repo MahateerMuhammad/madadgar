@@ -22,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
     FeedScreen(),
     NearbyScreen(),
     const Center(child: Text('Alerts coming soon...')),
-    //ProfileScreen(),
+    ProfileScreen(),
   ];
 
   final List<String> _titles = [
@@ -41,11 +41,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
      appBar: AppBar(
-  backgroundColor: Colors.white,
-  elevation: 0,
-  iconTheme: IconThemeData(color: primaryColor), // Makes drawer/menu icon primary
-  centerTitle: _currentIndex != 0,
-  title: _currentIndex == 0
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: IconThemeData(color: primaryColor), // Makes drawer/menu icon primary
+        centerTitle: _currentIndex != 0,
+        title: _currentIndex == 0
       ? Row(
           children: [
             Text(
@@ -137,36 +137,41 @@ class _HomeScreenState extends State<HomeScreen> {
     final user = Provider.of<AuthService>(context).currentUser;
     
     return Drawer(
-      child: Column(
-        children: [
-          UserAccountsDrawerHeader(
-            decoration: BoxDecoration(
-              color: primaryColor,
-            ),
-            accountName: Text(
-              user?.name ?? 'User Name',
-              style: TextStyle(
-                fontFamily: fontFamily,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            accountEmail: Text(
-              user?.email ?? 'user@example.com',
-              style: TextStyle(
-                fontFamily: fontFamily,
-                fontSize: 14,
-              ),
-            ),
-            currentAccountPicture: CircleAvatar(
-              backgroundColor: Colors.white,
-              child: Icon(
-                Icons.person,
-                size: 40,
-                color: primaryColor,
-              ),
+    child: Column(
+      children: [
+        UserAccountsDrawerHeader(
+          decoration: BoxDecoration(
+            color: primaryColor,
+          ),
+          accountName: Text(
+            user?.name ?? 'User Name',
+            style: TextStyle(
+              fontFamily: fontFamily,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
             ),
           ),
+          accountEmail: Text(
+            user?.email ?? 'user@example.com',
+            style: TextStyle(
+              fontFamily: fontFamily,
+              fontSize: 14,
+            ),
+          ),
+          currentAccountPicture: CircleAvatar(
+          backgroundColor: Colors.white,
+          backgroundImage: user?.profileImage != null && user!.profileImage!.isNotEmpty
+              ? NetworkImage(user.profileImage!)
+              : null,
+          child: (user?.profileImage == null || user!.profileImage!.isEmpty)
+              ? Icon(
+                  Icons.person,
+                  size: 40,
+                  color: primaryColor,
+                )
+      : null,
+),
+        ),
          
           const Divider(),
           ListTile(
