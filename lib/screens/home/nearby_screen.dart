@@ -184,9 +184,8 @@ class _NearbyScreenState extends State<NearbyScreen> {
                               color: Colors.transparent,
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(16),
-                                onTap: () async {
-                                  final postService = Provider.of<PostService>(context, listen: false);
-                                  await postService.incrementViewCount(post.id);
+                                onTap: () {
+                                  
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
