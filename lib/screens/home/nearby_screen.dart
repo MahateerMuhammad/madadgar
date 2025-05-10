@@ -6,6 +6,7 @@ import 'package:madadgar/models/post.dart';
 import 'package:madadgar/widgets/post_card.dart';
 import 'package:madadgar/screens/post/post_detail_screen.dart';
 import 'package:madadgar/config/theme.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class NearbyScreen extends StatefulWidget {
   const NearbyScreen({super.key});
@@ -184,15 +185,22 @@ class _NearbyScreenState extends State<NearbyScreen> {
                               color: Colors.transparent,
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(16),
-                                onTap: () {
-                                  
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => PostDetailScreen(post: post),
-                                    ),
-                                  );
-                                },
+                               onTap: () async {
+  final currentUser = FirebaseAuth.instance.currentUser;
+  
+  // Only increment if the viewer is not the post creator
+  if (currentUser != null && currentUser.uid != post.userId) {
+    await PostService().incrementViewCount(post.id);
+  }
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => PostDetailScreen(post: post),
+    ),
+  );
+},
+
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [

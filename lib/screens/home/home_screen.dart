@@ -7,6 +7,7 @@ import 'package:madadgar/services/auth_service.dart';
 import 'package:madadgar/screens/home/feed_screen.dart';
 import 'package:madadgar/screens/post/create_post_screen.dart';
 import 'package:madadgar/screens/profile/profile_screen.dart';
+import 'package:madadgar/screens/chat/conversation_list.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -69,14 +70,17 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
   actions: [
-    IconButton(
-      icon: Icon(Icons.chat_bubble_outline, color: primaryColor),
-      onPressed: () {
-        // Navigate to chat screen or show dialog
-        // Example: Navigator.pushNamed(context, '/chat');
-      },
-    ),
-  ],
+  IconButton(
+    icon: Icon(Icons.chat_bubble_outline, color: primaryColor),
+    onPressed: () {
+      // Navigate to the ConversationsListScreen
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const ConversationsListScreen()),
+      );
+    },
+  ),
+],
   bottom: PreferredSize(
     preferredSize: Size.fromHeight(1.0),
     child: Container(

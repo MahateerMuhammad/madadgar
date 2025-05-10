@@ -5,6 +5,8 @@ import 'package:madadgar/config/constants.dart';
 import 'package:madadgar/config/theme.dart';
 import 'package:madadgar/models/post.dart';
 import 'package:madadgar/services/post_service.dart';
+import 'package:madadgar/services/auth_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:madadgar/screens/post/post_detail_screen.dart';
 
 class FeedScreen extends StatefulWidget {
@@ -424,13 +426,26 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
               child: InkWell(
                 borderRadius: BorderRadius.circular(16),
                 onTap: () async {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => PostDetailScreen(post: post),
-                    ),
-                  );
+                final currentUser = FirebaseAuth.instance.currentUser;
+
+                // Only increment if viewer is not the post creator
+                if (currentUser != null && currentUser.uid != post.userId) {
+                  await PostService().incrementViewCount(post.id);
+                }
+
+                // Navigate and wait for return
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => PostDetailScreen(post: post),
+                  ),
+                );
+
+                // Reload posts after coming back
+                _loadPosts();
               },
+
+
 
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

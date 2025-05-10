@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:math';
+import 'package:madadgar/widgets/post_detail_chat.dart'; // Import PostDetailChatWidget
 
 class PostDetailScreen extends StatefulWidget {
   final PostModel post;
@@ -19,12 +20,13 @@ class PostDetailScreen extends StatefulWidget {
 class _PostDetailScreenState extends State<PostDetailScreen> {
   late int _viewCount;
   final ScrollController _scrollController = ScrollController();
+  bool _showChatWidget = false; // Added to toggle chat widget visibility
 
   @override
   void initState() {
     super.initState();
     _viewCount = widget.post.viewCount;
-     _fetchViewCount();
+    _fetchViewCount();
   }
 
   @override
@@ -33,14 +35,30 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     super.dispose();
   }
 
- Future<void> _fetchViewCount() async {
-  final postService = Provider.of<PostService>(context, listen: false);
-  final viewCount = await postService.getViewCount(widget.post.id); // You must define this method in PostService
-  setState(() {
-    _viewCount = viewCount;
-  });
-}
+  Future<void> _fetchViewCount() async {
+    final postService = Provider.of<PostService>(context, listen: false);
+    final viewCount = await postService.getViewCount(widget.post.id);
+    setState(() {
+      _viewCount = viewCount;
+    });
+  }
 
+  void _toggleChatWidget() {
+    setState(() {
+      _showChatWidget = !_showChatWidget;
+    });
+    
+    // Scroll to the bottom to show the chat widget if it's visible
+    if (_showChatWidget) {
+      Future.delayed(Duration(milliseconds: 300), () {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 500),
+          curve: Curves.easeOut,
+        );
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -184,7 +202,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                   fontFamily: fontFamily,
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 12,
+                                  fontSize: 11,
                                 ),
                               ),
                             ],
@@ -205,7 +223,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               fontFamily: fontFamily,
                               color: primaryColor,
                               fontWeight: FontWeight.w500,
-                              fontSize: 12,
+                              fontSize: 11,
                             ),
                           ),
                         ),
@@ -226,7 +244,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 style: TextStyle(
                                   fontFamily: fontFamily,
                                   color: Colors.grey[700],
-                                  fontSize: 12,
+                                  fontSize: 11,
                                 ),
                               ),
                             ],
@@ -252,7 +270,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         ),
                       ],
                       image: DecorationImage(
-                        image: AssetImage('assets/images/pattern.png'), // Add a subtle pattern asset to your project
+                        image: AssetImage('assets/images/pattern.png'),
                         opacity: 0.05,
                         fit: BoxFit.cover,
                       ),
@@ -567,6 +585,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   ],
                   
                   SizedBox(height: 24),
+                  
+                  // Display the chat widget if toggled
+                  if (_showChatWidget)
+                    PostDetailChatWidget(post: post),
                 ],
               ),
             ),
@@ -589,8 +611,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         child: SafeArea(
           child: Row(
             children: [
-              // Share button
-             
+              // Share button - removed as per your design
               SizedBox(width: 12),
               // Respond button
               Expanded(
@@ -615,17 +636,24 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     color: Colors.transparent,
                     child: InkWell(
                       onTap: () {
-                        // TODO: Implement response/contact functionality
+                        // Toggle the chat widget when the user clicks respond
+                        // This will either show the chat widget or hide it if already visible
+                        _toggleChatWidget();
                       },
                       borderRadius: BorderRadius.circular(12),
                       child: Center(
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.chat_bubble_outline, color: Colors.white),
+                            Icon(
+                              _showChatWidget 
+                                  ? Icons.close 
+                                  : Icons.chat_bubble_outline, 
+                              color: Colors.white
+                            ),
                             SizedBox(width: 8),
                             Text(
-                              'Respond',
+                              _showChatWidget ? 'Cancel' : 'Respond',
                               style: TextStyle(
                                 fontFamily: fontFamily,
                                 color: Colors.white,
