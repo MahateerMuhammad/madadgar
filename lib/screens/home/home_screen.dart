@@ -8,6 +8,9 @@ import 'package:madadgar/screens/home/feed_screen.dart';
 import 'package:madadgar/screens/post/create_post_screen.dart';
 import 'package:madadgar/screens/profile/profile_screen.dart';
 import 'package:madadgar/screens/chat/conversation_list.dart';
+import 'package:madadgar/screens/home/about.dart';
+import 'package:madadgar/screens/profile/settings_screen.dart';
+import 'package:madadgar/screens/post/my_posts_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -37,59 +40,61 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final primaryColor = MadadgarTheme.primaryColor;
     final fontFamily = MadadgarTheme.fontFamily;
-    final accentColor = HSLColor.fromColor(primaryColor).withLightness(0.85).toColor();
-    
+    final accentColor =
+        HSLColor.fromColor(primaryColor).withLightness(0.85).toColor();
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
-     appBar: AppBar(
+      appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        iconTheme: IconThemeData(color: primaryColor), // Makes drawer/menu icon primary
+        iconTheme: IconThemeData(
+            color: primaryColor), // Makes drawer/menu icon primary
         centerTitle: _currentIndex != 0,
         title: _currentIndex == 0
-      ? Row(
-          children: [
-            Text(
-              AppConstants.appName,
-              style: TextStyle(
-                fontFamily: fontFamily,
-                color: primaryColor,
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
+            ? Row(
+                children: [
+                  Text(
+                    AppConstants.appName,
+                    style: TextStyle(
+                      fontFamily: fontFamily,
+                      color: primaryColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
+                  ),
+                ],
+              )
+            : Text(
+                _titles[_currentIndex],
+                style: TextStyle(
+                  fontFamily: fontFamily,
+                  color: primaryColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
               ),
-            ),
-          ],
-        )
-      : Text(
-          _titles[_currentIndex],
-          style: TextStyle(
-            fontFamily: fontFamily,
-            color: primaryColor,
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.chat_bubble_outline, color: primaryColor),
+            onPressed: () {
+              // Navigate to the ConversationsListScreen
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const ConversationsListScreen()),
+              );
+            },
+          ),
+        ],
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(1.0),
+          child: Container(
+            height: 1.0,
+            color: Colors.grey.withOpacity(0.2),
           ),
         ),
-  actions: [
-  IconButton(
-    icon: Icon(Icons.chat_bubble_outline, color: primaryColor),
-    onPressed: () {
-      // Navigate to the ConversationsListScreen
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const ConversationsListScreen()),
-      );
-    },
-  ),
-],
-  bottom: PreferredSize(
-    preferredSize: Size.fromHeight(1.0),
-    child: Container(
-      height: 1.0,
-      color: Colors.grey.withOpacity(0.2),
-    ),
-  ),
-),
-
+      ),
       drawer: _buildNavigationDrawer(fontFamily, primaryColor, accentColor),
       body: _screens[_currentIndex],
       floatingActionButton: (_currentIndex == 0 || _currentIndex == 1)
@@ -128,144 +133,311 @@ class _HomeScreenState extends State<HomeScreen> {
         elevation: 8,
         backgroundColor: Colors.white,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'Feed'),
-          BottomNavigationBarItem(icon: Icon(Icons.location_on_outlined), activeIcon: Icon(Icons.location_on), label: 'Nearby'),
-          BottomNavigationBarItem(icon: Icon(Icons.notifications_outlined), activeIcon: Icon(Icons.notifications), label: 'Alerts'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'Profile'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.home_outlined),
+              activeIcon: Icon(Icons.home),
+              label: 'Feed'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.location_on_outlined),
+              activeIcon: Icon(Icons.location_on),
+              label: 'Nearby'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.notifications_outlined),
+              activeIcon: Icon(Icons.notifications),
+              label: 'Alerts'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline),
+              activeIcon: Icon(Icons.person),
+              label: 'Profile'),
         ],
       ),
     );
   }
 
-  Widget _buildNavigationDrawer(String fontFamily, Color primaryColor, Color accentColor) {
+  Widget _buildNavigationDrawer(
+      String fontFamily, Color primaryColor, Color accentColor) {
     final user = Provider.of<AuthService>(context).currentUser;
-    
+
     return Drawer(
-    child: Column(
-      children: [
-        UserAccountsDrawerHeader(
-          decoration: BoxDecoration(
-            color: primaryColor,
-          ),
-          accountName: Text(
-            user?.name ?? 'User Name',
-            style: TextStyle(
-              fontFamily: fontFamily,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
+      child: Container(
+        color: Colors.grey[50], // Using light background from app theme
+        child: Column(
+          children: [
+            // User info header
+            Container(
+              padding: const EdgeInsets.only(top: 50, bottom: 20),
+              decoration: BoxDecoration(
+                color: primaryColor, // Using primary color from app theme
+                borderRadius: const BorderRadius.only(
+                  bottomRight: Radius.circular(20),
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Profile image with white border
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      child: CircleAvatar(
+                        radius: 36,
+                        backgroundColor: Colors.white,
+                        backgroundImage: user?.profileImage != null &&
+                                user!.profileImage!.isNotEmpty
+                            ? NetworkImage(user.profileImage!)
+                            : null,
+                        child: (user?.profileImage == null ||
+                                user!.profileImage!.isEmpty)
+                            ? Icon(
+                                Icons.person,
+                                size: 36,
+                                color: primaryColor,
+                              )
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    // User name
+                    Text(
+                      user?.name ?? 'User Name',
+                      style: TextStyle(
+                        fontFamily: fontFamily,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    // User region/bio (optional)
+                    //         if (user?.bio != null && user!.bio!.isNotEmpty)
+                    //           Text(
+                    //             user.bio!,
+                    //             style: TextStyle(
+                    //               fontFamily: fontFamily,
+                    //               color: Colors.white.withOpacity(0.9),
+                    //               fontSize: 13,
+                    //               fontWeight: FontWeight.w400,
+                    //             ),
+                    //             maxLines: 1,
+                    //             overflow: TextOverflow.ellipsis,
+                    //           ),
+                  ],
+                ),
+              ),
             ),
-          ),
-          accountEmail: Text(
-            user?.email ?? 'user@example.com',
-            style: TextStyle(
-              fontFamily: fontFamily,
-              fontSize: 14,
+
+            const SizedBox(height: 8),
+
+            // Main navigation section
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'MAIN NAVIGATION',
+                          style: TextStyle(
+                            fontFamily: fontFamily,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: primaryColor.withOpacity(0.7),
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Main navigation items
+                    _buildDrawerItem(
+                      icon: Icons.home,
+                      title: 'Home / Feed',
+                      primaryColor: primaryColor,
+                      fontFamily: fontFamily,
+                      onTap: () {
+                        Navigator.pop(context);
+                        setState(() => _currentIndex = 0);
+                      },
+                    ),
+
+                    _buildDrawerItem(
+                      icon: Icons.article,
+                      title: 'My Posts',
+                      primaryColor: primaryColor,
+                      fontFamily: fontFamily,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => MyPostsScreen()),
+                        );
+                      },
+                    ),
+
+                    _buildDrawerItem(
+                      icon: Icons.add_circle,
+                      title: 'Create Post',
+                      primaryColor: primaryColor,
+                      fontFamily: fontFamily,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => CreatePostScreen()),
+                        );
+                      },
+                    ),
+
+                    Divider(
+                        color: Colors.grey.withOpacity(0.3),
+                        indent: 16,
+                        endIndent: 16),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'OTHER LINKS',
+                          style: TextStyle(
+                            fontFamily: fontFamily,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: primaryColor.withOpacity(0.7),
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    _buildDrawerItem(
+                      icon: Icons.person,
+                      title: 'Profile',
+                      primaryColor: primaryColor,
+                      fontFamily: fontFamily,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => ProfileScreen()),
+                        );
+                      },
+                    ),
+
+                    _buildDrawerItem(
+                      icon: Icons.settings,
+                      title: 'Settings',
+                      primaryColor: primaryColor,
+                      fontFamily: fontFamily,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const SettingsScreen()),
+                        );
+                      },
+                    ),
+
+                    _buildDrawerItem(
+                      icon: Icons.help_outline,
+                      title: 'Help Center',
+                      primaryColor: primaryColor,
+                      fontFamily: fontFamily,
+                      onTap: () {
+                        Navigator.pop(context);
+                        // Navigate to help (implement as needed)
+                      },
+                    ),
+
+                    _buildDrawerItem(
+                      icon: Icons.info,
+                      title: 'About Madadgar',
+                      primaryColor: primaryColor,
+                      fontFamily: fontFamily,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => AboutScreen()),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
-          currentAccountPicture: CircleAvatar(
-          backgroundColor: Colors.white,
-          backgroundImage: user?.profileImage != null && user!.profileImage!.isNotEmpty
-              ? NetworkImage(user.profileImage!)
-              : null,
-          child: (user?.profileImage == null || user!.profileImage!.isEmpty)
-              ? Icon(
-                  Icons.person,
-                  size: 40,
-                  color: primaryColor,
-                )
-      : null,
-),
+
+            // Footer with logout button
+            Container(
+              margin: const EdgeInsets.only(top: 8),
+              child: Column(
+                children: [
+                  Divider(color: Colors.grey.withOpacity(0.3)),
+                  ListTile(
+                    leading: Icon(Icons.logout, color: primaryColor),
+                    title: Text(
+                      'Logout',
+                      style: TextStyle(
+                        color: Colors.grey[800],
+                        fontFamily: fontFamily,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    onTap: () async {
+                      Navigator.pop(context);
+                      final authService =
+                          Provider.of<AuthService>(context, listen: false);
+                      await authService.logout();
+                      Navigator.pushReplacementNamed(context, '/login');
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-         
-          const Divider(),
-          ListTile(
-            leading: Icon(Icons.post_add, color: primaryColor),
-            title: Text(
-              'Create New Post',
-              style: TextStyle(
-                fontFamily: fontFamily,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => CreatePostScreen()),
-              );
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.settings, color: Colors.grey[700]),
-            title: Text(
-              'Settings',
-              style: TextStyle(
-                fontFamily: fontFamily,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            onTap: () {
-              Navigator.pop(context);
-              // Navigate to settings
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.help_outline, color: Colors.grey[700]),
-            title: Text(
-              'Help & Support',
-              style: TextStyle(
-                fontFamily: fontFamily,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            onTap: () {
-              Navigator.pop(context);
-              // Navigate to help
-            },
-          ),
-          const Divider(),
-          ListTile(
-            leading: Icon(Icons.info_outline, color: Colors.grey[700]),
-            title: Text(
-              'About',
-              style: TextStyle(
-                fontFamily: fontFamily,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            onTap: () {
-              Navigator.pop(context);
-              _showAboutDialog();
-            },
-          ),
-          const Spacer(),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.logout, color: Colors.red),
-            title: Text(
-              'Logout', 
-              style: TextStyle(
-                color: Colors.red,
-                fontFamily: fontFamily,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            onTap: () async {
-              Navigator.pop(context);
-              final authService = Provider.of<AuthService>(context, listen: false);
-              await authService.logout();
-              Navigator.pushReplacementNamed(context, '/login');
-            },
-          ),
-          const SizedBox(height: 16),
-        ],
       ),
+    );
+  }
+
+// Helper method to create drawer items with consistent styling
+  Widget _buildDrawerItem({
+    required IconData icon,
+    required String title,
+    required Color primaryColor,
+    required String fontFamily,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: primaryColor),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: 14,
+          fontFamily: fontFamily,
+          color: Colors.grey[800],
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+      dense: true,
+      onTap: onTap,
     );
   }
 
   void _showSearchDialog() {
     final primaryColor = MadadgarTheme.primaryColor;
     final fontFamily = MadadgarTheme.fontFamily;
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -325,7 +497,7 @@ class _HomeScreenState extends State<HomeScreen> {
               elevation: 2,
             ),
             child: Text(
-              'Search', 
+              'Search',
               style: TextStyle(
                 fontFamily: fontFamily,
                 color: Colors.white,
@@ -345,7 +517,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showAboutDialog() {
     final primaryColor = MadadgarTheme.primaryColor;
     final fontFamily = MadadgarTheme.fontFamily;
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

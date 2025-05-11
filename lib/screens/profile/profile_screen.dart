@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -12,6 +13,8 @@ import 'package:madadgar/screens/post/my_posts_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:madadgar/services/auth_service.dart';
+import 'package:madadgar/services/post_service.dart';
+import 'package:madadgar/screens/profile/settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -31,6 +34,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isUpdatingImage = false;
   bool _hasError = false;
   String _errorMessage = '';
+  
+  // Animation controllers
+  final double _cardElevation = 4.0;
 
   @override
   void initState() {
@@ -127,12 +133,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final String? currentProfileImageUrl = _userModel?.profileImage;
 
       // Prepare Cloudinary upload URL
-      final String cloudName =
-          "ddppfyrcv"; // Replace with your Cloudinary cloud name
-      final String presetName =
-          "madadgar"; // Replace with your Cloudinary preset name
-      final String uploadUrl =
-          "https://api.cloudinary.com/v1_1/ddppfyrcv/image/upload";
+      final String cloudName = "ddppfyrcv"; 
+      final String presetName = "madadgar"; 
+      final String uploadUrl = "https://api.cloudinary.com/v1_1/ddppfyrcv/image/upload";
 
       final request = http.MultipartRequest('POST', Uri.parse(uploadUrl));
       request.fields['upload_preset'] = presetName;
@@ -155,6 +158,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             'profileImage': downloadUrl,
             'updatedAt': DateTime.now().toIso8601String()
           });
+
+          await PostService().updateUserImageInPosts(user.uid, downloadUrl);
 
           // Delete previous profile image from Cloudinary if it exists
           if (currentProfileImageUrl != null &&
@@ -191,7 +196,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _deleteCloudinaryImage(String imageUrl) async {
     try {
       // Extract public ID from Cloudinary URL
-      // URL format: https://res.cloudinary.com/<cloud_name>/image/upload/v<version>/<public_id>.<extension>
       final uri = Uri.parse(imageUrl);
       final pathSegments = uri.pathSegments;
 
@@ -204,7 +208,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       String fullPublicId = pathSegments.sublist(2).join('/');
 
       // Remove version and extension to get clean public ID
-      // Format typically: v1234567890/folder/image
       final versionMatch = RegExp(r'v\d+/(.+)').firstMatch(fullPublicId);
       if (versionMatch != null && versionMatch.groupCount >= 1) {
         fullPublicId = versionMatch.group(1)!;
@@ -230,9 +233,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _openSettings() {
-    // Navigate to settings screen
+  Navigator.push(
+    context,
+    MaterialPageRoute(builder: (_) => const SettingsScreen()),
+  );
+}
+  
+  void _editProfile() {
+    // Navigate to edit profile screen
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Settings screen coming soon")),
+      const SnackBar(content: Text("Edit profile coming soon")),
     );
   }
 
@@ -240,8 +250,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final primaryColor = MadadgarTheme.primaryColor;
     final fontFamily = MadadgarTheme.fontFamily;
-    final accentColor =
-        HSLColor.fromColor(primaryColor).withLightness(0.85).toColor();
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -283,8 +292,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             padding: EdgeInsets.symmetric(
                                 horizontal: 24, vertical: 12),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(12),
                             ),
+                            elevation: 0,
                           ),
                           child: Text(
                             'Try Again',
@@ -297,225 +307,180 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ],
                     ),
                   )
-                : SafeArea(
-                    child: CustomScrollView(
-                      physics: AlwaysScrollableScrollPhysics(),
-                      slivers: [
-                        // App Bar with modern, minimal background
-                        SliverAppBar(
-                          expandedHeight: 200,
-                          floating: false,
-                          pinned: true,
-                          backgroundColor: Colors.white,
-                          elevation: 0,
-                          flexibleSpace: FlexibleSpaceBar(
-                            background: Stack(
-                              fit: StackFit.expand,
-                              children: [
-                                // Clean, minimal background
-                                Container(
-                                  color: Colors.white,
-                                ),
-                                // Modern accent shape
-                                Positioned(
-                                  top: -50,
-                                  right: -20,
-                                  child: Container(
-                                    height: 200,
-                                    width: 200,
-                                    decoration: BoxDecoration(
-                                      color: primaryColor.withOpacity(0.1),
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                ),
-                                // Secondary accent shape
-                                Positioned(
-                                  bottom: -30,
-                                  left: -30,
-                                  child: Container(
-                                    height: 120,
-                                    width: 120,
-                                    decoration: BoxDecoration(
-                                      color: primaryColor.withOpacity(0.08),
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                ),
-                                // Subtle top wave decoration
-                                Positioned(
-                                  top: 0,
-                                  left: 0,
-                                  right: 0,
-                                  child: ClipPath(
-                                    clipper: _WaveClipper(),
-                                    child: Container(
-                                      height: 90,
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                          colors: [
-                                            primaryColor.withOpacity(0.4),
-                                            primaryColor.withOpacity(0.2),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                // Profile image centered
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const SizedBox(height: 40),
-                                    _buildProfileImage(),
-                                  ],
-                                ),
-                              ],
-                            ),
+                : CustomScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    slivers: [
+                      // Modern app bar with slight blur effect
+                      SliverAppBar(
+                        expandedHeight: 0,
+                        backgroundColor: Colors.white,
+                        elevation: 0,
+                        pinned: true,
+                        actions: [
+                          IconButton(
+                            icon: Icon(Icons.settings_outlined, color: primaryColor),
+                            onPressed: _openSettings,
                           ),
-                        ),
-
-                        // User Info
-                        SliverToBoxAdapter(
-                          child: Column(
-                            children: [
-                              const SizedBox(height: 16),
-                              _buildUserInfo(),
-                              const SizedBox(height: 16),
-                              _buildStatistics(),
-                              const SizedBox(height: 24),
-                              _buildActionCards(),
-                              const SizedBox(height: 24),
-                              _buildActionButtons(),
-                              const SizedBox(height: 32),
-                            ],
+                          IconButton(
+                            icon: Icon(Icons.logout, color: Colors.red.shade400),
+                            onPressed: _logout,
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
+                      
+                      // Profile Header
+                      SliverToBoxAdapter(
+                        child: _buildProfileHeader(screenWidth, primaryColor, fontFamily),
+                      ),
+                      
+                      // Stats Card
+                      SliverToBoxAdapter(
+                        child: _buildStatsCard(fontFamily, primaryColor),
+                      ),
+                    ],
                   ),
       ),
     );
   }
-
-  Widget _buildProfileImage() {
+  
+  Widget _buildProfileHeader(double screenWidth, Color primaryColor, String fontFamily) {
     final user = FirebaseAuth.instance.currentUser;
     String? photoUrl = _userModel?.profileImage;
-
+    
     // If user model doesn't have image but Firebase Auth does
     if ((photoUrl == null || photoUrl.isEmpty) && user?.photoURL != null) {
       photoUrl = user!.photoURL;
     }
-
-    return Stack(
-      alignment: Alignment.bottomRight,
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 4),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 10,
-                offset: const Offset(0, 5),
-              ),
-            ],
+    
+    final displayName = _userModel?.name ?? user?.displayName ?? "User";
+    final email = _userModel?.email ?? user?.email ?? "";
+    final region = _userModel?.region ?? "";
+    
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 15),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            offset: const Offset(0, 5),
+            blurRadius: 15,
+            spreadRadius: 1,
           ),
-          child: CircleAvatar(
-            radius: 60,
-            backgroundColor: Colors.white,
-            backgroundImage: photoUrl != null && photoUrl.isNotEmpty
-                ? NetworkImage(photoUrl)
-                : null,
-            child: (photoUrl == null || photoUrl.isEmpty)
-                ? const Icon(Icons.person, size: 60, color: Colors.grey)
-                : null,
-          ),
-        ),
-        GestureDetector(
-          onTap: _updateProfilePicture,
-          child: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 5,
-                  offset: const Offset(0, 2),
+        ],
+      ),
+      child: Column(
+        children: [
+          const SizedBox(height: 30),
+          // Profile Image with Animation
+          Hero(
+            tag: 'profileImage',
+            child: Stack(
+              alignment: Alignment.bottomRight,
+              children: [
+                Container(
+                  height: 120,
+                  width: 120,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 15,
+                        spreadRadius: 0.5,
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    elevation: 0,
+                    shape: const CircleBorder(),
+                    clipBehavior: Clip.hardEdge,
+                    color: Colors.transparent,
+                    child: Ink(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.grey[100],
+                        image: photoUrl != null && photoUrl.isNotEmpty
+                            ? DecorationImage(
+                                image: NetworkImage(photoUrl),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
+                      ),
+                      child: (photoUrl == null || photoUrl.isEmpty)
+                          ? const Icon(Icons.person, size: 70, color: Colors.grey)
+                          : null,
+                    ),
+                  ),
+                ),
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: _updateProfilePicture,
+                    borderRadius: BorderRadius.circular(50),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: primaryColor,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: primaryColor.withOpacity(0.3),
+                            blurRadius: 8,
+                            spreadRadius: 0.5,
+                          ),
+                        ],
+                      ),
+                      child: _isUpdatingImage
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                          : const Icon(Icons.camera_alt, size: 20, color: Colors.white),
+                    ),
+                  ),
                 ),
               ],
             ),
-            child: _isUpdatingImage
-                ? SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                          MadadgarTheme.primaryColor),
-                    ),
-                  )
-                : Icon(Icons.camera_alt,
-                    size: 24, color: MadadgarTheme.primaryColor),
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildUserInfo() {
-    final fontFamily = MadadgarTheme.fontFamily;
-    final primaryColor = MadadgarTheme.primaryColor;
-    final user = FirebaseAuth.instance.currentUser;
-    final displayName = _userModel?.name ?? user?.displayName ?? "User";
-    final email = _userModel?.email ?? user?.email ?? "";
-    final phone = _userModel?.phone ?? "";
-    final region = _userModel?.region ?? "";
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        children: [
+          
+          const SizedBox(height: 15),
+          
+          // User Name
           Text(
             displayName,
             style: TextStyle(
               fontFamily: fontFamily,
-              fontSize: 24,
+              fontSize: 22,
               fontWeight: FontWeight.bold,
               color: Colors.black87,
             ),
           ),
-          const SizedBox(height: 4),
+          
+          const SizedBox(height: 5),
+          
+          // Email
           Text(
             email,
             style: TextStyle(
               fontFamily: fontFamily,
-              fontSize: 16,
+              fontSize: 14,
               color: Colors.black54,
             ),
           ),
-          if (phone.isNotEmpty) ...[
-            const SizedBox(height: 2),
-            Text(
-              phone,
-              style: TextStyle(
-                fontFamily: fontFamily,
-                fontSize: 14,
-                color: Colors.black54,
-              ),
-            ),
-          ],
+          
           if (region.isNotEmpty) ...[
-            const SizedBox(height: 2),
+            const SizedBox(height: 5),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.location_on, size: 16, color: Colors.black54),
+                Icon(Icons.location_on, size: 14, color: Colors.black54),
                 const SizedBox(width: 4),
                 Text(
                   region,
@@ -528,25 +493,64 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
           ],
-          if (_userModel?.isVerified == true) ...[
-            const SizedBox(height: 8),
+          
+          const SizedBox(height: 15),
+          
+          // Bio (Placeholder, you can add a real bio from user model)
+        
+          
+          const SizedBox(height: 20),
+          
+          // Edit Profile Button
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: ElevatedButton(
+              onPressed: _editProfile,
+              style: ElevatedButton.styleFrom(
+                foregroundColor: primaryColor,
+                backgroundColor: primaryColor.withOpacity(0.1),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                minimumSize: const Size(double.infinity, 45),
+              ),
+              child: Text(
+                'Edit Profile',
+                style: TextStyle(
+                  fontFamily: fontFamily,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+          
+          const SizedBox(height: 30),
+          
+          // Verification Badge
+          if (_userModel?.isVerified == true)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 10),
               decoration: BoxDecoration(
                 color: Colors.green.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.green.withOpacity(0.3)),
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
               ),
               child: Row(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.verified, size: 14, color: Colors.green),
-                  const SizedBox(width: 4),
+                  const Icon(Icons.verified, size: 16, color: Colors.green),
+                  const SizedBox(width: 6),
                   Text(
                     "Verified Account",
                     style: TextStyle(
                       fontFamily: fontFamily,
-                      fontSize: 12,
+                      fontSize: 13,
                       color: Colors.green,
                       fontWeight: FontWeight.w500,
                     ),
@@ -554,56 +558,66 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             ),
-          ],
         ],
       ),
     );
   }
 
-  Widget _buildStatistics() {
+  Widget _buildStatsCard(String fontFamily, Color primaryColor) {
     final helpCount = _userModel?.helpCount ?? 0;
     final thankCount = _userModel?.thankCount ?? 0;
-    final fontFamily = MadadgarTheme.fontFamily;
-    final primaryColor = MadadgarTheme.primaryColor;
-
+    // Placeholder for additional stats
+    final postsCount = 12; // Replace with actual posts count
+    
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24),
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 15),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 5),
+            blurRadius: 15,
+            spreadRadius: 1,
           ),
         ],
-        border: Border.all(
-            color: HSLColor.fromColor(primaryColor)
-                .withLightness(0.85)
-                .toColor()
-                .withOpacity(0.5)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildStatItem(
-            "Helped",
-            helpCount.toString(),
-            Icons.handshake,
+          // Posts Count
+          _buildAnimatedStatItem(
+            "Posts",
+            postsCount.toString(),
+            Icons.article_outlined,
             primaryColor,
             fontFamily,
           ),
           Container(
             height: 40,
             width: 1,
-            color: Colors.grey.withOpacity(0.3),
+            color: Colors.grey.withOpacity(0.2),
           ),
-          _buildStatItem(
+          // Helped Count
+          _buildAnimatedStatItem(
+            "Helped",
+            helpCount.toString(),
+            Icons.handshake_outlined,
+            primaryColor,
+            fontFamily,
+          ),
+          Container(
+            height: 40,
+            width: 1,
+            color: Colors.grey.withOpacity(0.2),
+          ),
+          // Thanks Count
+          _buildAnimatedStatItem(
             "Thanks",
             thankCount.toString(),
-            Icons.favorite,
+            Icons.favorite_outline,
             Colors.redAccent,
             fontFamily,
           ),
@@ -611,212 +625,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
-
-  Widget _buildStatItem(String label, String value, IconData icon, Color color,
-      String fontFamily) {
-    return Column(
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 20, color: color),
-            const SizedBox(width: 8),
-            Text(
-              value,
-              style: TextStyle(
-                fontFamily: fontFamily,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontFamily: fontFamily,
-            fontSize: 14,
-            color: Colors.black54,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionCards() {
-    final fontFamily = MadadgarTheme.fontFamily;
-    final primaryColor = MadadgarTheme.primaryColor;
-    final accentColor =
-        HSLColor.fromColor(primaryColor).withLightness(0.85).toColor();
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildActionCard(
-            "Change Password",
-            Icons.lock_outline,
-            _changePassword,
-            primaryColor,
-            accentColor,
-            fontFamily,
-          ),
-          _buildActionCard(
-            "Settings",
-            Icons.settings,
-            _openSettings,
-            primaryColor,
-            accentColor,
-            fontFamily,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionCard(String label, IconData icon, VoidCallback onTap,
-      Color primaryColor, Color accentColor, String fontFamily) {
-    return Container(
-      width: 150,
-      height: 110,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-        border: Border.all(color: accentColor.withOpacity(0.5)),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+  
+  Widget _buildAnimatedStatItem(
+      String label, String value, IconData icon, Color color, String fontFamily) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 1000),
+      curve: Curves.easeOutCubic,
+      builder: (context, val, child) {
+        return Opacity(
+          opacity: val,
+          child: Transform.translate(
+            offset: Offset(0, (1 - val) * 20),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: primaryColor.withOpacity(0.1),
+                    color: color.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(icon, size: 24, color: primaryColor),
+                  child: Icon(icon, size: 16, color: color),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  label,
-                  textAlign: TextAlign.center,
+                  value,
                   style: TextStyle(
                     fontFamily: fontFamily,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                     color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontFamily: fontFamily,
+                    fontSize: 12,
+                    color: Colors.black54,
                   ),
                 ),
               ],
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
-
-  Widget _buildActionButtons() {
-    final fontFamily = MadadgarTheme.fontFamily;
-    final primaryColor = MadadgarTheme.primaryColor;
-
-    return Column(
-      children: [
-        Container(
-          width: double.infinity,
-          margin: const EdgeInsets.symmetric(horizontal: 24),
-          child: ElevatedButton.icon(
-            icon: const Icon(Icons.list_alt),
-            label: Text(
-              'View All My Posts',
-              style: TextStyle(
-                fontFamily: fontFamily,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: primaryColor,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              elevation: 2,
-              shadowColor: primaryColor.withOpacity(0.3),
-            ),
-            onPressed: _navigateToMyPosts,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Container(
-          width: double.infinity,
-          margin: const EdgeInsets.symmetric(horizontal: 24),
-          child: ElevatedButton.icon(
-            icon: const Icon(Icons.logout),
-            label: Text(
-              'Logout',
-              style: TextStyle(
-                fontFamily: fontFamily,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red[400],
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              elevation: 2,
-              shadowColor: Colors.red.withOpacity(0.3),
-            ),
-            onPressed: _logout,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// Custom clipper for the wave effect
-class _WaveClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    var path = Path();
-    path.lineTo(0, size.height);
-
-    var firstControlPoint = Offset(size.width / 4, size.height - 30);
-    var firstEndPoint = Offset(size.width / 2, size.height - 20);
-    path.quadraticBezierTo(firstControlPoint.dx, firstControlPoint.dy,
-        firstEndPoint.dx, firstEndPoint.dy);
-
-    var secondControlPoint = Offset(size.width * 0.75, size.height - 10);
-    var secondEndPoint = Offset(size.width, size.height - 40);
-    path.quadraticBezierTo(secondControlPoint.dx, secondControlPoint.dy,
-        secondEndPoint.dx, secondEndPoint.dy);
-
-    path.lineTo(size.width, 0);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }

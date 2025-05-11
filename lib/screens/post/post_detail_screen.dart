@@ -5,7 +5,6 @@ import 'package:madadgar/services/post_service.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:firebase_auth/firebase_auth.dart';
-import 'dart:math';
 import 'package:madadgar/widgets/post_detail_chat.dart'; // Import PostDetailChatWidget
 
 class PostDetailScreen extends StatefulWidget {
@@ -74,9 +73,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       body: CustomScrollView(
         controller: _scrollController,
         slivers: [
-          // Custom App Bar
+          // Custom App Bar - simplified without image handling
           SliverAppBar(
-            expandedHeight: post.images.isNotEmpty ? 250 : 120,
+            expandedHeight: 120,
             pinned: true,
             stretch: true,
             backgroundColor: theme.scaffoldBackgroundColor,
@@ -92,58 +91,20 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               ),
             ),
             flexibleSpace: FlexibleSpaceBar(
-              background: post.images.isNotEmpty
-                  ? Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Image.network(
-                          post.images.first,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Container(color: primaryColor.withOpacity(0.1)),
-                        ),
-                        // Semi-transparent overlay for better text visibility
-                        Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          height: 80,
-                          child: Container(
-                            color: Colors.black.withOpacity(0.45),
-                          ),
-                        ),
-                        // Title overlaid on image
-                        Positioned(
-                          bottom: 20,
-                          left: 16,
-                          right: 16,
-                          child: Text(
-                            post.title,
-                            style: TextStyle(
-                              fontFamily: fontFamily,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              shadows: [Shadow(blurRadius: 3, color: Colors.black.withOpacity(0.5))],
-                            ),
-                          ),
-                        ),
-                      ],
-                    )
-                  : Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Text(
-                          post.title,
-                          style: TextStyle(
-                            fontFamily: fontFamily,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
+              background: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text(
+                    post.title,
+                    style: TextStyle(
+                      fontFamily: fontFamily,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
                     ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
             ),
           ),
 
@@ -418,172 +379,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     ),
                   ),
                   
-                  // Gallery section with more appealing layout
-                  if (post.images.length > 1) ...[
-                    SizedBox(height: 24),
-                    Row(
-                      children: [
-                        Container(
-                          height: 24,
-                          width: 4,
-                          decoration: BoxDecoration(
-                            color: primaryColor,
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          'Gallery',
-                          style: TextStyle(
-                            fontFamily: fontFamily,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: primaryColor,
-                          ),
-                        ),
-                        Spacer(),
-                        Container(
-                          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: secondaryColor,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            '${post.images.length - 1} Photos',
-                            style: TextStyle(
-                              fontFamily: fontFamily,
-                              color: primaryColor,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 16),
-                    // Create a staggered grid effect
-                    if (post.images.length == 2) 
-                      // Just one additional image - show it full width
-                      Container(
-                        height: 200,
-                        width: double.infinity,
-                        margin: EdgeInsets.only(bottom: 8),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 10,
-                              offset: Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: Image.network(
-                            post.images[1],
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Container(
-                                  color: Colors.grey[200],
-                                  child: Icon(Icons.broken_image, color: Colors.grey),
-                                ),
-                          ),
-                        ),
-                      )
-                    else if (post.images.length > 2)
-                      // Multiple images - create a more interesting layout
-                      Column(
-                        children: [
-                          // First image takes full width
-                          Container(
-                            height: 180,
-                            width: double.infinity,
-                            margin: EdgeInsets.only(bottom: 8),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 10,
-                                  offset: Offset(0, 3),
-                                ),
-                              ],
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
-                              child: Image.network(
-                                post.images[1],
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    Container(
-                                      color: Colors.grey[200],
-                                      child: Icon(Icons.broken_image, color: Colors.grey),
-                                    ),
-                              ),
-                            ),
-                          ),
-                          // Remaining images in a row
-                          Row(
-                            children: [
-                              for (int i = 2; i < min(post.images.length, 5); i++) 
-                                Expanded(
-                                  child: Container(
-                                    height: 120,
-                                    margin: EdgeInsets.only(
-                                      right: i < min(post.images.length, 5) - 1 ? 8 : 0,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(16),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withOpacity(0.1),
-                                          blurRadius: 10,
-                                          offset: Offset(0, 3),
-                                        ),
-                                      ],
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(16),
-                                      child: Stack(
-                                        fit: StackFit.expand,
-                                        children: [
-                                          Image.network(
-                                            post.images[i],
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (context, error, stackTrace) =>
-                                                Container(
-                                                  color: Colors.grey[200],
-                                                  child: Icon(Icons.broken_image, color: Colors.grey),
-                                                ),
-                                          ),
-                                          // Show count of additional images on the last visible one
-                                          if (i == min(post.images.length, 5) - 1 && post.images.length > 5)
-                                            Container(
-                                              color: Colors.black.withOpacity(0.5),
-                                              child: Center(
-                                                child: Text(
-                                                  '+${post.images.length - 5}',
-                                                  style: TextStyle(
-                                                    fontFamily: fontFamily,
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 18,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ],
-                      ),
-                  ],
-                  
                   SizedBox(height: 24),
                   
                   // Display the chat widget if toggled
@@ -611,7 +406,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         child: SafeArea(
           child: Row(
             children: [
-              // Share button - removed as per your design
               SizedBox(width: 12),
               // Respond button
               Expanded(
@@ -637,7 +431,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     child: InkWell(
                       onTap: () {
                         // Toggle the chat widget when the user clicks respond
-                        // This will either show the chat widget or hide it if already visible
                         _toggleChatWidget();
                       },
                       borderRadius: BorderRadius.circular(12),

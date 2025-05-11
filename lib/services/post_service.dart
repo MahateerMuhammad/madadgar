@@ -6,6 +6,35 @@ class PostService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final String _collectionName = 'posts';
 
+// Add this method to your PostService class in post_service.dart
+
+Future<void> updatePost(PostModel post) async {
+  try {
+    await _firestore.collection(_collectionName).doc(post.id).update(post.toMap());
+    print('Post updated successfully: ${post.id}');
+  } catch (e) {
+    print("Error updating post: $e");
+    rethrow;
+  }
+}
+
+  Future<void> updateUserImageInPosts(String userId, String newImageUrl) async {
+  final querySnapshot = await FirebaseFirestore.instance
+      .collection('posts')
+      .where('userId', isEqualTo: userId)
+      .get();
+
+  final batch = FirebaseFirestore.instance.batch();
+
+  for (final doc in querySnapshot.docs) {
+    batch.update(doc.reference, {'userImage': newImageUrl});
+  }
+
+  await batch.commit();
+  print("Updated userImage in ${querySnapshot.docs.length} posts.");
+}
+
+
   // Add a new post to Firestore
   Future<void> addPost(PostModel post) async {
     try {

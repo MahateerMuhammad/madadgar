@@ -68,142 +68,236 @@ class ChatService {
   }
 
   // Start or get existing conversation
-  Future<ChatConversation> startConversation({
-    required String postId,
-    required String postTitle,
-    required String postType,
-    required String postOwnerId,
-    required String postOwnerName,
-    required String responderMessage,
-    required bool isPostAnonymous,
-  }) async {
-    if (currentUserId.isEmpty) {
-      throw Exception('User must be logged in');
-    }
+// Fix for the startConversation method in ChatService class
+// Replace the existing method with this corrected version
 
-    debugPrint(
-        "Starting conversation: Post ID: $postId, User1: $postOwnerId, User2: $currentUserId");
+// In ChatService class
+// Fix for the startConversation method in ChatService class
+// Replace the existing method with this corrected version
 
-    // Check if user has already responded to this post
-    bool alreadyResponded = await hasUserRespondedToPost(postId, currentUserId);
-    if (alreadyResponded) {
-      throw Exception('You have already responded to this post');
-    }
+// Fix for the startConversation method in ChatService class
+// Replace the existing method with this corrected version
 
-    // Check if conversation already exists
-    QuerySnapshot existingConversations;
-    try {
-      existingConversations = await _conversationsRef
-          .where('postId', isEqualTo: postId)
-          .where('userId2', isEqualTo: currentUserId)
-          .limit(1)
-          .get();
+Future<ChatConversation> startConversation({
+  required String postId,
+  required String postTitle,
+  required String postType,
+  required String postOwnerId,
+  required String postOwnerName,
+  required String responderMessage,
+  required String responderUserId,      // Explicitly accept responder's ID
+  required String responderUserName,    // Explicitly accept responder's name
+  required bool isPostAnonymous,
+}) async {
+  if (responderUserId.isEmpty) {
+    throw Exception('User must be logged in');
+  }
+  
+  debugPrint("Starting conversation: Post ID: $postId, User1: $postOwnerId, User2: $responderUserId");
+  debugPrint("Post Owner: $postOwnerName, Responder: $responderUserName, Anonymous: $isPostAnonymous");
 
-      debugPrint(
-          "Found ${existingConversations.docs.length} existing conversations");
-    } catch (e) {
-      debugPrint("Error checking for existing conversations: $e");
-      throw Exception('Failed to check for existing conversations: $e');
-    }
-
-    late ChatConversation conversation;
-
-    if (existingConversations.docs.isNotEmpty) {
-      // Conversation exists, get it
-      try {
-        final doc = existingConversations.docs.first;
-        conversation = ChatConversation.fromMap(
-            doc.id, doc.data() as Map<String, dynamic>);
-
-        debugPrint("Using existing conversation: ${conversation.id}");
-
-        // Send the new message
-        await sendMessage(
-          conversationId: conversation.id,
-          message: responderMessage,
-          senderName: isPostAnonymous
-              ? "Anonymous"
-              : currentUserName,
-        );
-      } catch (e) {
-        debugPrint("Error retrieving existing conversation: $e");
-        throw Exception('Failed to retrieve existing conversation: $e');
-      }
-    } else {
-      // Create new conversation
-      try {
-        final conversationData = {
-          'postId': postId,
-          'postTitle': postTitle,
-          'postType': postType,
-          'userId1': postOwnerId, // Post owner
-          'userName1': postOwnerName, // Post owner name
-          'userId2': currentUserId, // Responder
-          'userName2': isPostAnonymous
-              ? "Anonymous"
-              : currentUserName,
-          'lastMessage': responderMessage,
-          'lastMessageTime': FieldValue.serverTimestamp(),
-          'unreadCount1': 1, // Post owner has 1 unread message
-          'unreadCount2': 0, // Responder has 0 unread
-          'createdAt': FieldValue.serverTimestamp(),
-          'updatedAt': FieldValue.serverTimestamp(),
-          'isFulfilled': false,
-          'helpGivenByUser1': false,
-          'helpGivenByUser2': false,
-          'thanksGivenByUser1': false,
-          'thanksGivenByUser2': false,
-          'participants': [
-            postOwnerId,
-            currentUserId
-          ],
-        };
-
-        debugPrint("Creating new conversation with data: $conversationData");
-
-        // Create conversation document
-        DocumentReference docRef =
-            await _conversationsRef.add(conversationData);
-        debugPrint("Created conversation with ID: ${docRef.id}");
-
-        // Get the newly created conversation with server timestamps resolved
-        DocumentSnapshot docSnapshot = await docRef.get();
-
-        if (!docSnapshot.exists) {
-          throw Exception('Newly created conversation document not found');
-        }
-
-        conversation = ChatConversation.fromMap(
-            docRef.id, docSnapshot.data() as Map<String, dynamic>);
-
-        debugPrint(
-            "Successfully created and retrieved conversation: ${conversation.id}");
-
-        // Add first message with anonymity check
-        await _messagesRef(docRef.id).add({
-          'senderId': currentUserId,
-          'senderName': isPostAnonymous
-              ? "Anonymous"
-              : currentUserName,
-          'receiverId': postOwnerId,
-          'message': responderMessage,
-          'timestamp': FieldValue.serverTimestamp(),
-          'isRead': false,
-        });
-
-        // Record that this user has responded to this post
-        await recordPostResponse(postId, currentUserId);
-
-        debugPrint("Added first message to conversation");
-      } catch (e) {
-        debugPrint("Error creating new conversation: $e");
-        throw Exception('Failed to create new conversation: $e');
-      }
-    }
-
-    return conversation;
+  // Check if user has already responded to this post
+  bool alreadyResponded = await hasUserRespondedToPost(postId, responderUserId);
+  if (alreadyResponded) {
+    throw Exception('You have already responded to this post');
   }
 
+  // Check if conversation already exists
+  QuerySnapshot existingConversations;
+  try {
+    existingConversations = await _conversationsRef
+        .where('postId', isEqualTo: postId)
+        .where('userId2', isEqualTo: responderUserId)
+        .limit(1)
+        .get();
+
+    debugPrint(
+        "Found ${existingConversations.docs.length} existing conversations");
+  } catch (e) {
+    debugPrint("Error checking for existing conversations: $e");
+    throw Exception('Failed to check for existing conversations: $e');
+  }
+
+  late ChatConversation conversation;
+
+  if (existingConversations.docs.isNotEmpty) {
+    // Conversation exists, get it
+    try {
+      final doc = existingConversations.docs.first;
+      conversation = ChatConversation.fromMap(
+          doc.id, doc.data() as Map<String, dynamic>);
+
+      debugPrint("Using existing conversation: ${conversation.id}");
+
+      // Send the new message
+      await sendMessage(
+        conversationId: conversation.id,
+        message: responderMessage,
+        senderName: responderUserName,  // Use the provided username
+      );
+    } catch (e) {
+      debugPrint("Error retrieving existing conversation: $e");
+      throw Exception('Failed to retrieve existing conversation: $e');
+    }
+  } else {
+    // Create new conversation
+    try {
+      // Store the real responder username regardless of anonymity setting
+      // The sendMessage method will handle displaying "Anonymous" when appropriate
+      final String actualResponderName = responderUserName;
+      
+      final conversationData = {
+        'postId': postId,
+        'postTitle': postTitle,
+        'postType': postType,
+        'userId1': postOwnerId, // Post owner
+        'userName1': postOwnerName, // Post owner name
+        'userId2': responderUserId, // Responder
+        'userName2': actualResponderName, // Store real username in database
+        'lastMessage': responderMessage,
+        'lastMessageTime': FieldValue.serverTimestamp(),
+        'unreadCount1': 1, // Post owner has 1 unread message
+        'unreadCount2': 0, // Responder has 0 unread
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+        'isFulfilled': false,
+        'helpGivenByUser1': false,
+        'helpGivenByUser2': false,
+        'thanksGivenByUser1': false,
+        'thanksGivenByUser2': false,
+        'participants': [
+          postOwnerId,
+          responderUserId
+        ],
+        'isAnonymous': isPostAnonymous, // Store the anonymity flag
+      };
+
+      debugPrint("Creating new conversation with data: $conversationData");
+
+      // Create conversation document
+      DocumentReference docRef =
+          await _conversationsRef.add(conversationData);
+      debugPrint("Created conversation with ID: ${docRef.id}");
+
+      // Get the newly created conversation with server timestamps resolved
+      DocumentSnapshot docSnapshot = await docRef.get();
+
+      if (!docSnapshot.exists) {
+        throw Exception('Newly created conversation document not found');
+      }
+
+      conversation = ChatConversation.fromMap(
+          docRef.id, docSnapshot.data() as Map<String, dynamic>);
+
+      debugPrint(
+          "Successfully created and retrieved conversation: ${conversation.id}");
+
+      // Determine what name should appear for the sender in this first message
+      String displayName = isPostAnonymous ? "Anonymous" : actualResponderName;
+      
+      // Add first message - Store actual name in database but display respecting anonymity
+      await _messagesRef(docRef.id).add({
+        'senderId': responderUserId,
+        'senderName': displayName, // Use display name that respects anonymity
+        'receiverId': postOwnerId,
+        'message': responderMessage,
+        'timestamp': FieldValue.serverTimestamp(),
+        'isRead': false,
+      });
+
+      // Record that this user has responded to this post
+      await recordPostResponse(postId, responderUserId);
+
+      debugPrint("Added first message to conversation");
+    } catch (e) {
+      debugPrint("Error creating new conversation: $e");
+      throw Exception('Failed to create new conversation: $e');
+    }
+  }
+
+  return conversation;
+}
+
+// Fix for the sendMessage method in ChatService class
+// Replace the existing method with this corrected version
+
+Future<void> sendMessage({
+  required String conversationId,
+  required String message,
+  required String senderName, // This may be modified if needed for anonymity
+}) async {
+  if (currentUserId.isEmpty) {
+    throw Exception('User must be logged in');
+  }
+
+  // Check if conversation is completed
+  bool isCompleted = await isConversationCompleted(conversationId);
+  if (isCompleted) {
+    throw Exception('This conversation has been completed and cannot receive new messages');
+  }
+
+  debugPrint("Sending message to conversation: $conversationId");
+
+  // Get the conversation to determine who to send to and respect anonymity
+  try {
+    DocumentSnapshot conversationDoc =
+        await _conversationsRef.doc(conversationId).get();
+
+    if (!conversationDoc.exists) {
+      debugPrint("Conversation not found with ID: $conversationId");
+      throw Exception('Conversation not found');
+    }
+
+    Map<String, dynamic> conversationData =
+        conversationDoc.data() as Map<String, dynamic>;
+
+    String receiverId = conversationData['userId1'] == currentUserId
+        ? conversationData['userId2']
+        : conversationData['userId1'];
+
+    // Check if this conversation is anonymous
+    bool isAnonymousConversation = conversationData['isAnonymous'] == true;
+    
+    // Only apply anonymity for the responder (userId2)
+    String effectiveSenderName = senderName;
+    if (isAnonymousConversation && currentUserId == conversationData['userId2']) {
+      effectiveSenderName = "Anonymous";
+      debugPrint("Using anonymous sender name because conversation is anonymous and user is responder");
+    }
+
+    // Update unread count for the receiver
+    String unreadField = conversationData['userId1'] == receiverId
+        ? 'unreadCount1'
+        : 'unreadCount2';
+
+    debugPrint("Adding message from $currentUserId to $receiverId with name: $effectiveSenderName");
+
+    // Add the message with the effective sender name
+    await _messagesRef(conversationId).add({
+      'senderId': currentUserId,
+      'senderName': effectiveSenderName, // Use the anonymity-respecting name
+      'receiverId': receiverId,
+      'message': message,
+      'timestamp': FieldValue.serverTimestamp(),
+      'isRead': false,
+    });
+
+    debugPrint("Updating conversation metadata");
+
+    // Update conversation metadata
+    await _conversationsRef.doc(conversationId).update({
+      'lastMessage': message,
+      'lastMessageTime': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+      unreadField: FieldValue.increment(1),
+    });
+
+    debugPrint("Message sent successfully");
+  } catch (e) {
+    debugPrint("Error sending message: $e");
+    throw Exception('Failed to send message: $e');
+  }
+}
   // Get a conversation by ID
   Future<ChatConversation> getConversationById(String conversationId) async {
     try {
@@ -263,86 +357,8 @@ class ChatService {
 
   // Send a message - now checks if conversation is completed
   // In ChatService class, modify the sendMessage method to honor the anonymity setting
-
-Future<void> sendMessage({
-  required String conversationId,
-  required String message,
-  required String senderName, // This might be ignored if the conversation is anonymous
-}) async {
-  if (currentUserId.isEmpty) {
-    throw Exception('User must be logged in');
-  }
-
-  // Check if conversation is completed
-  bool isCompleted = await isConversationCompleted(conversationId);
-  if (isCompleted) {
-    throw Exception('This conversation has been completed and cannot receive new messages');
-  }
-
-  debugPrint("Sending message to conversation: $conversationId");
-
-  // Get the conversation to determine who to send to and respect anonymity
-  try {
-    DocumentSnapshot conversationDoc =
-        await _conversationsRef.doc(conversationId).get();
-
-    if (!conversationDoc.exists) {
-      debugPrint("Conversation not found with ID: $conversationId");
-      throw Exception('Conversation not found');
-    }
-
-    Map<String, dynamic> conversationData =
-        conversationDoc.data() as Map<String, dynamic>;
-
-    String receiverId = conversationData['userId1'] == currentUserId
-        ? conversationData['userId2']
-        : conversationData['userId1'];
-
-    // Check if this is an anonymous conversation by checking participant names
-    bool isAnonymousConversation = false;
-    if (conversationData['userName2'] == "Anonymous") {
-      isAnonymousConversation = true;
-    }
-
-    // If conversation is anonymous and current user is the responder, use "Anonymous"
-    String effectiveSenderName = senderName;
-    if (isAnonymousConversation && currentUserId == conversationData['userId2']) {
-      effectiveSenderName = "Anonymous";
-    }
-
-    // Update unread count for the receiver
-    String unreadField = conversationData['userId1'] == receiverId
-        ? 'unreadCount1'
-        : 'unreadCount2';
-
-    debugPrint("Adding message from $currentUserId to $receiverId");
-
-    // Add the message with the effective sender name
-    await _messagesRef(conversationId).add({
-      'senderId': currentUserId,
-      'senderName': effectiveSenderName, // Use the anonymity-respecting name
-      'receiverId': receiverId,
-      'message': message,
-      'timestamp': FieldValue.serverTimestamp(),
-      'isRead': false,
-    });
-
-    debugPrint("Updating conversation metadata");
-
-    // Update conversation metadata
-    await _conversationsRef.doc(conversationId).update({
-      'lastMessage': message,
-      'lastMessageTime': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
-      unreadField: FieldValue.increment(1),
-    });
-
-    debugPrint("Message sent successfully");
-  } catch (e) {
-    debugPrint("Error sending message: $e");
-    throw Exception('Failed to send message: $e');
-  }
-}
+// Fix for the sendMessage method in ChatService class
+// Replace the existing method with this corrected version
 
   // Mark conversation as read
   Future<void> markAsRead(ChatConversation conversation) async {

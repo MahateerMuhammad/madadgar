@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:madadgar/models/post.dart';
 import 'package:madadgar/models/chat.dart';
 import 'package:madadgar/services/chat_service.dart';
+import 'package:madadgar/services/user_service.dart'; // Make sure to import UserService
 import 'package:madadgar/screens/chat/chat_screen.dart';
 
 class PostDetailChatWidget extends StatefulWidget {
@@ -20,34 +21,87 @@ class PostDetailChatWidget extends StatefulWidget {
 class _PostDetailChatWidgetState extends State<PostDetailChatWidget> {
   final TextEditingController _messageController = TextEditingController();
   final ChatService _chatService = ChatService();
+  final UserService _userService = UserService(); // Add UserService
   bool _isLoading = false;
-  final String _currentUserId = FirebaseAuth.instance.currentUser?.uid ?? '';
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  late String _currentUserId;
+  late String _currentUserName;
+  bool _isLoadingUsername = true; // Add this flag
 
   @override
   void initState() {
     super.initState();
-    debugPrint("PostDetailChatWidget initialized for post: ${widget.post.id}");
+    _currentUserId = _auth.currentUser?.uid ?? '';
+    _currentUserName = 'User'; // Default value
+    _loadCurrentUsername(); // Call method to load actual username
+  }
+
+  // Method to load the actual username from Firestore
+  Future<void> _loadCurrentUsername() async {
+    if (_currentUserId.isEmpty) return;
+    
+    setState(() {
+      _isLoadingUsername = true;
+    });
+    
+    try {
+      // Get username from UserService
+      String username = await _userService.getCurrentUsername();
+      
+      if (mounted) {
+        setState(() {
+          _currentUserName = username;
+          _isLoadingUsername = false;
+        });
+      }
+      
+      debugPrint("Loaded current username: $_currentUserName");
+    } catch (e) {
+      debugPrint("Error loading username: $e");
+      if (mounted) {
+        setState(() {
+          _isLoadingUsername = false;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     // Don't show if viewing own post
-   if (widget.post.userId == _currentUserId) {
-    // Show a SnackBar and navigate back to the previous screen
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('You cannot reply to your own post')),
-      );
-      
-      // Navigate back to the previous screen after showing the SnackBar
-      Future.delayed(const Duration(seconds: 1), () {
-        if (mounted) {
-          Navigator.pop(context); // This will pop the current screen and return to the previous one
-        }
+    if (widget.post.userId == _currentUserId) {
+      // Show a SnackBar and navigate back to the previous screen
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('You cannot reply to your own post')),
+        );
+
+        // Navigate back to the previous screen after showing the SnackBar
+        Future.delayed(const Duration(seconds: 1), () {
+          if (mounted) {
+            Navigator.pop(context);
+          }
+        });
       });
-    });
-    return const SizedBox.shrink();  // Don't show the chat widget
-  }
+      return const SizedBox.shrink(); // Don't show the chat widget
+    }
+
+    // Show loading while fetching username
+    if (_isLoadingUsername) {
+      return Card(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Center(
+            child: CircularProgressIndicator(),
+          ),
+        ),
+      );
+    }
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -73,7 +127,8 @@ class _PostDetailChatWidgetState extends State<PostDetailChatWidget> {
               decoration: const InputDecoration(
                 hintText: 'Type your message here...',
                 border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
               maxLines: 3,
             ),
@@ -106,7 +161,7 @@ class _PostDetailChatWidgetState extends State<PostDetailChatWidget> {
 
   Future<void> _respondToPost() async {
     final message = _messageController.text.trim();
-    
+
     if (message.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter a message')),
@@ -119,20 +174,23 @@ class _PostDetailChatWidgetState extends State<PostDetailChatWidget> {
     });
 
     try {
-      debugPrint("Attempting to start conversation for post: ${widget.post.id}");
-      
-      // Start a conversation or add to existing one
-     final conversation = await _chatService.startConversation(
-  postId: widget.post.id,
-  postTitle: widget.post.title,
-  postType: widget.post.type.name,
-  postOwnerId: widget.post.userId,
-  postOwnerName: widget.post.userName,
-  responderMessage: message,
-  isPostAnonymous: widget.post.isAnonymous, // Add this line to pass the correct value
-);
+      debugPrint(
+          "Attempting to start conversation for post: ${widget.post.id}");
+      debugPrint("Current user name being sent: $_currentUserName");
 
-      
+      // Start a conversation or add to existing one
+      final conversation = await _chatService.startConversation(
+        postId: widget.post.id,
+        postTitle: widget.post.title,
+        postType: widget.post.type.name,
+        postOwnerId: widget.post.userId,
+        postOwnerName: widget.post.userName,
+        responderMessage: message,
+        responderUserId: _currentUserId,    // Explicitly pass current user ID
+        responderUserName: _currentUserName, // Pass the correct username
+        isPostAnonymous: widget.post.isAnonymous,
+      );
+
       debugPrint("Conversation created/retrieved: ${conversation.id}");
 
       // Clear the text field
@@ -144,7 +202,8 @@ class _PostDetailChatWidgetState extends State<PostDetailChatWidget> {
       );
 
       // Make sure we're using the most updated conversation object
-      final updatedConversation = await _chatService.getConversationById(conversation.id);
+      final updatedConversation =
+          await _chatService.getConversationById(conversation.id);
       debugPrint("Fetched updated conversation: ${updatedConversation.id}");
 
       // Check if widget is still mounted before navigating
@@ -154,7 +213,7 @@ class _PostDetailChatWidgetState extends State<PostDetailChatWidget> {
       }
 
       debugPrint("Navigating to chat screen");
-      
+
       // Use push instead of pushReplacement to maintain navigation stack
       Navigator.push(
         context,
@@ -180,7 +239,7 @@ class _PostDetailChatWidgetState extends State<PostDetailChatWidget> {
       }
     }
   }
-  
+
   @override
   void dispose() {
     _messageController.dispose();

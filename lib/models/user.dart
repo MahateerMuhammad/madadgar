@@ -10,7 +10,7 @@ class UserModel {
   final bool isVerified;
   final DateTime createdAt;
   final DateTime updatedAt;
-  
+
   UserModel({
     required this.id,
     required this.name,
@@ -24,7 +24,7 @@ class UserModel {
     required this.createdAt,
     required this.updatedAt,
   });
-  
+
   // Convert to Map for Firebase
   Map<String, dynamic> toMap() {
     return {
@@ -41,7 +41,7 @@ class UserModel {
       'updatedAt': updatedAt.toIso8601String(),
     };
   }
-  
+
   // Create from Map from Firebase
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
@@ -58,7 +58,7 @@ class UserModel {
       updatedAt: DateTime.parse(map['updatedAt']),
     );
   }
-  
+
   // Copy with new values
   UserModel copyWith({
     String? name,

@@ -5,6 +5,60 @@ import 'package:madadgar/models/user.dart';
 class UserService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final String _collectionName = 'users';
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  Future<UserModel> getUserModel(String userId) async {
+    try {
+      DocumentSnapshot userDoc = await _firestore.collection('users').doc(userId).get();
+      
+      if (!userDoc.exists) {
+        throw Exception('User not found');
+      }
+      
+      Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+      return UserModel.fromMap(userData);
+    } catch (e) {
+     
+      throw Exception('Failed to get user data: $e');
+    }
+  }
+  
+  // Get just the username from a user document
+  Future<String> getUsername(String userId) async {
+    try {
+      DocumentSnapshot userDoc = await _firestore.collection('users').doc(userId).get();
+      
+      if (!userDoc.exists) {
+      
+        // Fall back to Firebase Auth display name if Firestore doc doesn't exist
+        User? currentUser = _auth.currentUser;
+        if (currentUser != null && currentUser.uid == userId) {
+          return currentUser.displayName ?? 'User';
+        }
+        return 'User';
+      }
+      
+      Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+      return userData['name'] ?? 'User';
+    } catch (e) {
+     
+      return 'User'; // Fallback
+    }
+  }
+  
+  // Get the current user's username
+  Future<String> getCurrentUsername() async {
+    User? currentUser = _auth.currentUser;
+    if (currentUser == null) {
+      return 'User';
+    }
+    
+    return await getUsername(currentUser.uid);
+  }
+  
+   
+ 
+  
 
   // Get user by ID
   Future<UserModel> getUserById(String userId) async {
