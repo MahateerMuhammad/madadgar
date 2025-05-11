@@ -20,6 +20,8 @@ class ChatConversation {
   final bool helpGivenByUser2;
   final bool thanksGivenByUser1;
   final bool thanksGivenByUser2;
+  final List<String> participants;  // Added participants list
+  final bool isAnonymous;  // Added field to track post anonymity
 
   ChatConversation({
     required this.id,
@@ -41,6 +43,8 @@ class ChatConversation {
     required this.helpGivenByUser2,
     required this.thanksGivenByUser1,
     required this.thanksGivenByUser2,
+    required this.participants,  // Added participants parameter
+    this.isAnonymous = false,  // Default to non-anonymous
   });
 
   factory ChatConversation.fromMap(String id, Map<String, dynamic> map) {
@@ -69,6 +73,8 @@ class ChatConversation {
       helpGivenByUser2: map['helpGivenByUser2'] ?? false,
       thanksGivenByUser1: map['thanksGivenByUser1'] ?? false,
       thanksGivenByUser2: map['thanksGivenByUser2'] ?? false,
+      participants: List<String>.from(map['participants'] ?? []),  // Added participants conversion
+      isAnonymous: map['isAnonymous'] ?? false,  // Get the isAnonymous field
     );
   }
 
@@ -92,6 +98,8 @@ class ChatConversation {
       'helpGivenByUser2': helpGivenByUser2,
       'thanksGivenByUser1': thanksGivenByUser1,
       'thanksGivenByUser2': thanksGivenByUser2,
+      'participants': participants,  // Added participants to the map
+      'isAnonymous': isAnonymous,  // Added isAnonymous to the map
     };
   }
 
@@ -115,6 +123,8 @@ class ChatConversation {
     bool? helpGivenByUser2,
     bool? thanksGivenByUser1,
     bool? thanksGivenByUser2,
+    List<String>? participants,  // Added participants to copyWith
+    bool? isAnonymous,  // Added isAnonymous to copyWith
   }) {
     return ChatConversation(
       id: this.id,
@@ -136,6 +146,8 @@ class ChatConversation {
       helpGivenByUser2: helpGivenByUser2 ?? this.helpGivenByUser2,
       thanksGivenByUser1: thanksGivenByUser1 ?? this.thanksGivenByUser1,
       thanksGivenByUser2: thanksGivenByUser2 ?? this.thanksGivenByUser2,
+      participants: participants ?? this.participants,  // Handle participants in copyWith
+      isAnonymous: isAnonymous ?? this.isAnonymous,  // Handle isAnonymous in copyWith
     );
   }
 }

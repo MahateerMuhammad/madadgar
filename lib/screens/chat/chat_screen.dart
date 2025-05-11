@@ -43,20 +43,70 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-    // Add this method to determine if chat should be anonymous
-  void _determineAnonymity() {
-    // If post is provided, check its anonymous property
-    if (widget.post != null) {
-      _isAnonymousChat = widget.post!.isAnonymous;
-      return;
-    }
-    
-    // If post isn't available, infer from conversation data
-    // If userName2 is "Anonymous", likely this was an anonymous post
-    if (_currentConversation.userName2 == "Anonymous") {
-      _isAnonymousChat = true;
-    }
+  String _getUserName(String userId, String storedName) {
+  // Check if this user should be anonymous
+  if (_isAnonymousChat && userId == _currentConversation.userId2) {
+    // If conversation is anonymous and this is the responder, show as Anonymous
+    return "Anonymous";
   }
+  
+  // Otherwise show real name
+  return storedName;
+}
+
+    // Add this method to determine if chat should be anonymous
+ // Updates to ChatScreen.dart in _ChatScreenState
+
+// In ChatScreen class (_ChatScreenState)
+void _determineAnonymity() {
+  // If post is provided, check its anonymous property
+  if (widget.post != null) {
+    _isAnonymousChat = widget.post!.isAnonymous;
+    return;
+  }
+  
+  // Check the isAnonymous field directly from conversation
+  _isAnonymousChat = _currentConversation.isAnonymous;
+}
+
+// Replace the _sendMessage method with this:
+Future<void> _sendMessage() async {
+  final message = _messageController.text.trim();
+  if (message.isEmpty) return;
+
+  setState(() {
+    _isLoading = true;
+  });
+
+  try {
+    // Always use real name - ChatService will handle anonymity as needed
+    final senderName = _currentUserId == _currentConversation.userId1
+        ? _currentConversation.userName1
+        : _currentConversation.userName2;
+
+    // If userName2 is "Anonymous" in the database but we need the real name for the current user
+    final effectiveSenderName = (_currentUserId == _currentConversation.userId2 && 
+                              _currentConversation.userName2 == "Anonymous")
+        ? FirebaseAuth.instance.currentUser?.displayName ?? 'Anonymous'
+        : senderName;
+
+    await _chatService.sendMessage(
+      conversationId: _currentConversation.id,
+      message: message,
+      senderName: effectiveSenderName,
+    );
+
+    _messageController.clear();
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error sending message: ${e.toString()}')),
+    );
+  } finally {
+    setState(() {
+      _isLoading = false;
+    });
+  }
+}
 
   
   void _markMessagesAsRead() {
@@ -98,22 +148,22 @@ Widget build(BuildContext context) {
 
     return Scaffold(
       appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              isPostCreator 
-                  ? _currentConversation.userName2 
-                  : _currentConversation.userName1,
-              style: const TextStyle(fontSize: 16),
-            ),
-            Text(
-              _currentConversation.postTitle,
-              style: const TextStyle(fontSize: 12),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
+  title: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        isPostCreator 
+            ? _getUserName(_currentConversation.userId2, _currentConversation.userName2)
+            : _getUserName(_currentConversation.userId1, _currentConversation.userName1),
+        style: const TextStyle(fontSize: 16),
+      ),
+      Text(
+        _currentConversation.postTitle,
+        style: const TextStyle(fontSize: 12),
+        overflow: TextOverflow.ellipsis,
+      ),
+    ],
+  ),
        actions: [
   // Only show the "Give Help" button if the current user is allowed to give help
   if (canGiveHelp && !_isChatCompleted && !helpAlreadyGiven)
@@ -358,40 +408,6 @@ Widget build(BuildContext context) {
 
  // In ChatScreen class (_ChatScreenState), we can simplify the sendMessage method 
 // since ChatService will now handle anonymity
-
-Future<void> _sendMessage() async {
-  final message = _messageController.text.trim();
-  if (message.isEmpty) return;
-
-  setState(() {
-    _isLoading = true;
-  });
-
-  try {
-    // Get sender name from conversation without worrying about anonymity
-    // The ChatService will handle applying anonymity if needed
-    final senderName = _currentUserId == _currentConversation.userId1
-        ? _currentConversation.userName1
-        : _currentConversation.userName2;
-
-    await _chatService.sendMessage(
-      conversationId: _currentConversation.id,
-      message: message,
-      senderName: senderName, // ChatService will apply anonymity if needed
-    );
-
-    _messageController.clear();
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error sending message: ${e.toString()}')),
-    );
-  } finally {
-    setState(() {
-      _isLoading = false;
-    });
-  }
-}
-
 
   Future<void> _giveHelp() async {
     try {
