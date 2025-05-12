@@ -16,20 +16,33 @@ class NearbyScreen extends StatefulWidget {
   _NearbyScreenState createState() => _NearbyScreenState();
 }
 
-class _NearbyScreenState extends State<NearbyScreen> with TickerProviderStateMixin {
+class _NearbyScreenState extends State<NearbyScreen>
+    with TickerProviderStateMixin {
   List<PostModel> _nearbyPosts = [];
   bool _isLoading = true;
   bool _hasError = false;
   String _errorMessage = '';
   
+  // Add scroll controller
+  final ScrollController _scrollController = ScrollController();
+
   // Animation controllers for item animations
   final List<AnimationController> _itemAnimationControllers = [];
   final List<Animation<double>> _itemAnimations = [];
-  
+
   @override
   void initState() {
     super.initState();
     _loadNearbyPosts();
+    
+    // Use a proper delay for post-frame callback
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        Future.delayed(const Duration(milliseconds: 50), () {
+          if (mounted) setState(() {});
+        });
+      }
+    });
   }
 
   @override
@@ -38,7 +51,17 @@ class _NearbyScreenState extends State<NearbyScreen> with TickerProviderStateMix
     for (var controller in _itemAnimationControllers) {
       controller.dispose();
     }
+    _scrollController.dispose();
     super.dispose();
+  }
+  
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Use a proper delay to avoid layout issues during transitions
+    Future.delayed(const Duration(milliseconds: 50), () {
+      if (mounted) setState(() {});
+    });
   }
 
   // Initialize animations for list items
@@ -49,22 +72,22 @@ class _NearbyScreenState extends State<NearbyScreen> with TickerProviderStateMix
     }
     _itemAnimationControllers.clear();
     _itemAnimations.clear();
-    
+
     // Create new controllers and animations
     for (int i = 0; i < itemCount; i++) {
       final controller = AnimationController(
         vsync: this,
         duration: Duration(milliseconds: 400),
       );
-      
+
       final animation = CurvedAnimation(
         parent: controller,
         curve: Curves.easeOutQuart,
       );
-      
+
       _itemAnimationControllers.add(controller);
       _itemAnimations.add(animation);
-      
+
       // Stagger the animations
       Future.delayed(Duration(milliseconds: 50 * i), () {
         controller.forward();
@@ -78,7 +101,7 @@ class _NearbyScreenState extends State<NearbyScreen> with TickerProviderStateMix
         _isLoading = true;
         _hasError = false;
       });
-      
+
       final authService = Provider.of<AuthService>(context, listen: false);
       final postService = Provider.of<PostService>(context, listen: false);
 
@@ -95,7 +118,7 @@ class _NearbyScreenState extends State<NearbyScreen> with TickerProviderStateMix
       setState(() {
         _nearbyPosts = posts;
         _isLoading = false;
-        
+
         // Initialize animations when posts are loaded
         if (posts.isNotEmpty) {
           _initItemAnimations(posts.length);
@@ -114,7 +137,7 @@ class _NearbyScreenState extends State<NearbyScreen> with TickerProviderStateMix
   String _formatPostDate(DateTime dateTime) {
     final now = DateTime.now();
     final difference = now.difference(dateTime);
-    
+
     if (difference.inDays > 30) {
       return '${dateTime.day} ${_getMonth(dateTime.month)} ${dateTime.year}';
     } else if (difference.inDays > 7) {
@@ -129,9 +152,22 @@ class _NearbyScreenState extends State<NearbyScreen> with TickerProviderStateMix
       return 'Just now';
     }
   }
-  
+
   String _getMonth(int month) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
     return months[month - 1];
   }
 
@@ -139,7 +175,7 @@ class _NearbyScreenState extends State<NearbyScreen> with TickerProviderStateMix
   Widget build(BuildContext context) {
     final primaryColor = MadadgarTheme.primaryColor;
     final fontFamily = MadadgarTheme.fontFamily;
-    
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       body: RefreshIndicator(
@@ -148,12 +184,12 @@ class _NearbyScreenState extends State<NearbyScreen> with TickerProviderStateMix
         strokeWidth: 2.5,
         onRefresh: _loadNearbyPosts,
         child: _isLoading
-          ? _buildLoadingState(primaryColor, fontFamily)
-          : _hasError
-              ? _buildErrorState(fontFamily, primaryColor)
-              : _nearbyPosts.isEmpty
-                  ? _buildEmptyState(fontFamily, primaryColor)
-                  : _buildPostsList(primaryColor, fontFamily),
+            ? _buildLoadingState(primaryColor, fontFamily)
+            : _hasError
+                ? _buildErrorState(fontFamily, primaryColor)
+                : _nearbyPosts.isEmpty
+                    ? _buildEmptyState(fontFamily, primaryColor)
+                    : _buildPostsList(_nearbyPosts, fontFamily, primaryColor),
       ),
     );
   }
@@ -224,7 +260,8 @@ class _NearbyScreenState extends State<NearbyScreen> with TickerProviderStateMix
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryColor,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                 elevation: 2,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -258,7 +295,7 @@ class _NearbyScreenState extends State<NearbyScreen> with TickerProviderStateMix
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Image.asset(
-            'assets/images/empty_state.png', 
+            'assets/images/empty_state.png',
             height: 120,
             width: 120,
             errorBuilder: (context, error, _) => Icon(
@@ -320,17 +357,24 @@ class _NearbyScreenState extends State<NearbyScreen> with TickerProviderStateMix
     );
   }
 
-  Widget _buildPostsList(Color primaryColor, String fontFamily) {
+  // Improved post list builder to prevent overflow issues
+  Widget _buildPostsList(List<PostModel> posts, String fontFamily, Color primaryColor) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: ListView.builder(
+        key: ValueKey('nearby_post_list_${DateTime.now().millisecondsSinceEpoch}'),
+        controller: _scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
-        itemCount: _nearbyPosts.length,
+        cacheExtent: 500,
+        shrinkWrap: false,
+        itemCount: posts.length,
         itemBuilder: (context, index) {
-          final post = _nearbyPosts[index];
+          final post = posts[index];
           
           return FadeTransition(
-            opacity: _itemAnimations.isNotEmpty ? _itemAnimations[index] : const AlwaysStoppedAnimation(1.0),
+            opacity: _itemAnimations.isNotEmpty
+                ? _itemAnimations[index]
+                : const AlwaysStoppedAnimation(1.0),
             child: SlideTransition(
               position: _itemAnimations.isNotEmpty
                   ? Tween<Offset>(
@@ -338,7 +382,12 @@ class _NearbyScreenState extends State<NearbyScreen> with TickerProviderStateMix
                       end: Offset.zero,
                     ).animate(_itemAnimations[index])
                   : const AlwaysStoppedAnimation(Offset.zero),
-              child: _buildPostCard(post, index, fontFamily, primaryColor),
+              // Use LayoutBuilder to get constraints for the post card
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return _buildPostCard(post, index, fontFamily, primaryColor, constraints);
+                },
+              ),
             ),
           );
         },
@@ -346,23 +395,37 @@ class _NearbyScreenState extends State<NearbyScreen> with TickerProviderStateMix
     );
   }
 
-  Widget _buildPostCard(PostModel post, int index, String fontFamily, Color primaryColor) {
+  // Updated post card builder with constraint handling
+  Widget _buildPostCard(
+      PostModel post, int index, String fontFamily, Color primaryColor, BoxConstraints constraints) {
     return FutureBuilder<UserModel>(
       future: UserService().getUserById(post.userId),
       builder: (context, userSnapshot) {
         // Default values in case user data isn't loaded yet
         int helpCount = 0;
         int thankCount = 0;
-        
+
         if (userSnapshot.hasData) {
           helpCount = userSnapshot.data!.helpCount;
           thankCount = userSnapshot.data!.thankCount;
         }
-        
+
         return Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: Hero(
             tag: 'post_${post.id}',
+            // Use a placeholder on Hero flight
+            flightShuttleBuilder: (flightContext, animation, direction, fromContext, toContext) {
+              return Material(
+                color: Colors.transparent,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+              );
+            },
             child: Material(
               color: Colors.transparent,
               borderRadius: BorderRadius.circular(20),
@@ -380,16 +443,21 @@ class _NearbyScreenState extends State<NearbyScreen> with TickerProviderStateMix
                   await Navigator.push(
                     context,
                     PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) => 
-                        PostDetailScreen(post: post),
-                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          PostDetailScreen(post: post),
+                      transitionsBuilder:
+                          (context, animation, secondaryAnimation, child) {
                         return FadeTransition(opacity: animation, child: child);
                       },
                     ),
                   );
 
-                  // Reload posts after coming back
-                  _loadNearbyPosts();
+                  // Update state after navigation with proper delay
+                  if (mounted) {
+                    // Add a short delay to ensure proper frame scheduling
+                    await Future.delayed(const Duration(milliseconds: 100));
+                    _loadNearbyPosts(); // Reload posts after coming back
+                  }
                 },
                 borderRadius: BorderRadius.circular(20),
                 splashColor: primaryColor.withOpacity(0.05),
@@ -409,274 +477,96 @@ class _NearbyScreenState extends State<NearbyScreen> with TickerProviderStateMix
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Post Image if available
-                        if (post.images.isNotEmpty)
-                          Stack(
-                            children: [
-                              Container(
-                                height: 200,
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: primaryColor.withOpacity(0.1),
-                                ),
-                                child: post.images.isNotEmpty
-                                  ? Image.network(
-                                      post.images.first,
-                                      fit: BoxFit.cover,
-                                      loadingBuilder: (context, child, loadingProgress) {
-                                        if (loadingProgress == null) return child;
-                                        return Center(
-                                          child: CircularProgressIndicator(
-                                            value: loadingProgress.expectedTotalBytes != null
-                                              ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                                              : null,
-                                            strokeWidth: 2,
-                                            valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
-                                          ),
-                                        );
-                                      },
-                                      errorBuilder: (context, error, stackTrace) => Center(
-                                        child: Icon(
-                                          Icons.image_not_supported_rounded,
-                                          color: primaryColor.withOpacity(0.3),
-                                          size: 40,
-                                        ),
-                                      ),
-                                    )
-                                  : null,
-                              ),
-                              Positioned(
-                                top: 12,
-                                right: 12,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.6),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    _formatPostDate(post.createdAt),
-                                    style: TextStyle(
-                                      fontFamily: fontFamily,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          
-                        // Content
-                        Padding(
-                          padding: EdgeInsets.all(post.images.isNotEmpty ? 16.0 : 20.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (post.images.isEmpty)
-                                Align(
-                                  alignment: Alignment.topRight,
-                                  child: Text(
-                                    _formatPostDate(post.createdAt),
-                                    style: TextStyle(
-                                      fontFamily: fontFamily,
-                                      fontSize: 12,
-                                      color: Colors.grey[500],
-                                    ),
-                                  ),
-                                ),
-                              
-                              // User row with stats
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: 0,
+                        maxHeight: constraints.maxHeight,
+                      ),
+                      child: SingleChildScrollView(
+                        physics: NeverScrollableScrollPhysics(),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Post Image if available
+                            if (post.images.isNotEmpty)
+                              _buildPostImage(post, fontFamily, primaryColor),
+                            
+                            // Content section
+                            Padding(
+                              padding: EdgeInsets.all(post.images.isNotEmpty ? 14.0 : 16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  // User avatar
-                                  Container(
-                                    padding: const EdgeInsets.all(2),
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: primaryColor.withOpacity(0.2),
-                                        width: 1.5,
-                                      ),
-                                    ),
-                                    child: CircleAvatar(
-                                      radius: 18,
-                                      backgroundColor: primaryColor.withOpacity(0.1),
-                                      backgroundImage: post.userImage.isNotEmpty
-                                        ? NetworkImage(post.userImage)
-                                        : null,
-                                      child: post.userImage.isEmpty
-                                        ? Text(
-                                            post.userName.isNotEmpty 
-                                              ? post.userName[0].toUpperCase()
-                                              : '?',
-                                            style: TextStyle(
-                                              fontFamily: fontFamily,
-                                              color: primaryColor,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
-                                            ),
-                                          )
-                                        : null,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  
-                                  // Username and location
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          post.userName,
-                                          style: TextStyle(
-                                            fontFamily: fontFamily,
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 15,
-                                            color: Colors.black.withOpacity(0.8),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 1),
-                                        Row(
-                                          children: [
-                                            Icon(
-                                              Icons.location_on_rounded,
-                                              size: 14,
-                                              color: Colors.grey[600],
-                                            ),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              post.region,
-                                              style: TextStyle(
-                                                fontFamily: fontFamily,
-                                                fontSize: 12,
-                                                color: Colors.grey[600],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  
-                                  // User stats in a row
-                                  Row(
-                                    children: [
-                                      _buildStatBadge(Icons.handshake_outlined, helpCount, fontFamily),
-                                      const SizedBox(width: 8),
-                                      _buildStatBadge(Icons.favorite_border_rounded, thankCount, fontFamily),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              
-                              const SizedBox(height: 16),
-                              
-                              // Post badges (type & category)
-                              Row(
-                                children: [
-                                  // Post type badge
-                                  _buildPostTypeBadge(post.type, fontFamily, primaryColor),
-                                  const SizedBox(width: 8),
-                                  // Category badge
-                                  _buildCategoryBadge(post.category, fontFamily, primaryColor),
-                                ],
-                              ),
-                              
-                              const SizedBox(height: 14),
-                              
-                              // Post title
-                              Text(
-                                post.title,
-                                style: TextStyle(
-                                  fontFamily: fontFamily,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black.withOpacity(0.85),
-                                  height: 1.3,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 10),
-                              
-                              // Post description
-                              Text(
-                                post.description,
-                                style: TextStyle(
-                                  fontFamily: fontFamily,
-                                  fontSize: 14,
-                                  color: Colors.black.withOpacity(0.65),
-                                  height: 1.5,
-                                ),
-                                maxLines: 3,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              
-                              const SizedBox(height: 16),
-                              
-                              // Footer with view count and engagement hint
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  // View count
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.visibility_rounded,
-                                        size: 16,
-                                        color: Colors.grey[600],
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        '${post.viewCount} ${post.viewCount == 1 ? 'view' : 'views'}',
+                                  if (post.images.isEmpty)
+                                    Align(
+                                      alignment: Alignment.topRight,
+                                      child: Text(
+                                        _formatPostDate(post.createdAt),
                                         style: TextStyle(
                                           fontFamily: fontFamily,
-                                          fontSize: 13,
-                                          color: Colors.grey[600],
+                                          fontSize: 12,
+                                          color: Colors.grey[500],
                                         ),
                                       ),
+                                    ),
+                                  
+                                  // User info row
+                                  _buildUserInfoRow(post, helpCount, thankCount, fontFamily, primaryColor),
+                                  
+                                  const SizedBox(height: 12),
+                                  
+                                  // Post badges (type & category)
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: [
+                                      _buildPostTypeBadge(post.type, fontFamily, primaryColor),
+                                      _buildCategoryBadge(post.category, fontFamily, primaryColor),
                                     ],
                                   ),
                                   
-                                  // Tap to engage hint
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                    decoration: BoxDecoration(
-                                      color: primaryColor.withOpacity(0.07),
-                                      borderRadius: BorderRadius.circular(12),
+                                  const SizedBox(height: 12),
+                                  
+                                  // Post title with limited lines
+                                  Text(
+                                    post.title,
+                                    style: TextStyle(
+                                      fontFamily: fontFamily,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black.withOpacity(0.85),
+                                      height: 1.2,
                                     ),
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          Icons.touch_app_rounded,
-                                          size: 14,
-                                          color: primaryColor,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          'Tap to engage',
-                                          style: TextStyle(
-                                            fontFamily: fontFamily,
-                                            fontSize: 12,
-                                            color: primaryColor,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
+                                  const SizedBox(height: 8),
+                                  
+                                  // Post description with limited lines
+                                  Text(
+                                    post.description,
+                                    style: TextStyle(
+                                      fontFamily: fontFamily,
+                                      fontSize: 13,
+                                      color: Colors.black.withOpacity(0.65),
+                                      height: 1.4,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  
+                                  const SizedBox(height: 12),
+                                  
+                                  // Footer row
+                                  _buildFooterRow(post, fontFamily, primaryColor),
                                 ],
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
@@ -685,6 +575,219 @@ class _NearbyScreenState extends State<NearbyScreen> with TickerProviderStateMix
           ),
         );
       },
+    );
+  }
+
+  // Extract the post image to a separate method
+  Widget _buildPostImage(PostModel post, String fontFamily, Color primaryColor) {
+    return SizedBox(
+      height: 180,
+      width: double.infinity,
+      child: Stack(
+        fit: StackFit.passthrough,
+        children: [
+          Positioned.fill(
+            child: post.images.isNotEmpty
+              ? Image.network(
+                  post.images.first,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Center(
+                      child: CircularProgressIndicator(
+                        value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                          : null,
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+                      ),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) => Center(
+                    child: Icon(
+                      Icons.image_not_supported_rounded,
+                      color: primaryColor.withOpacity(0.3),
+                      size: 40,
+                    ),
+                  ),
+                )
+              : Container(color: Colors.grey[200]),
+          ),
+          Positioned(
+            top: 12,
+            right: 12,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.6),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                _formatPostDate(post.createdAt),
+                style: TextStyle(
+                  fontFamily: fontFamily,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Extract the user info row to a separate method
+  Widget _buildUserInfoRow(PostModel post, int helpCount, int thankCount, String fontFamily, Color primaryColor) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // User avatar
+        Container(
+          padding: const EdgeInsets.all(2),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: primaryColor.withOpacity(0.2),
+              width: 1.5,
+            ),
+          ),
+          child: CircleAvatar(
+            radius: 16,
+            backgroundColor: primaryColor.withOpacity(0.1),
+            backgroundImage: post.userImage.isNotEmpty
+              ? NetworkImage(post.userImage)
+              : null,
+            child: post.userImage.isEmpty
+              ? Text(
+                  post.userName.isNotEmpty 
+                    ? post.userName[0].toUpperCase()
+                    : '?',
+                  style: TextStyle(
+                    fontFamily: fontFamily,
+                    color: primaryColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                )
+              : null,
+          ),
+        ),
+        const SizedBox(width: 10),
+        
+        // Username and location
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                post.userName,
+                style: TextStyle(
+                  fontFamily: fontFamily,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  color: Colors.black.withOpacity(0.8),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.location_on_rounded,
+                    size: 12,
+                    color: Colors.grey[600],
+                  ),
+                  const SizedBox(width: 2),
+                  Flexible(
+                    child: Text(
+                      post.region,
+                      style: TextStyle(
+                        fontFamily: fontFamily,
+                        fontSize: 11,
+                        color: Colors.grey[600],
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        
+        // User stats
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildStatBadge(Icons.handshake_outlined, helpCount, fontFamily),
+            const SizedBox(width: 4),
+            _buildStatBadge(Icons.favorite_border_rounded, thankCount, fontFamily),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // Extract the footer row to a separate method
+  Widget _buildFooterRow(PostModel post, String fontFamily, Color primaryColor) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        // View count
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.visibility_rounded,
+              size: 14,
+              color: Colors.grey[600],
+            ),
+            const SizedBox(width: 3),
+            Text(
+              '${post.viewCount} ${post.viewCount == 1 ? 'view' : 'views'}',
+              style: TextStyle(
+                fontFamily: fontFamily,
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+        
+        // Tap to engage hint
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: primaryColor.withOpacity(0.07),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.touch_app_rounded,
+                size: 12,
+                color: primaryColor,
+              ),
+              const SizedBox(width: 3),
+              Text(
+                'Tap to engage',
+                style: TextStyle(
+                  fontFamily: fontFamily,
+                  fontSize: 11,
+                  color: primaryColor,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -714,19 +817,21 @@ class _NearbyScreenState extends State<NearbyScreen> with TickerProviderStateMix
     );
   }
 
-  Widget _buildPostTypeBadge(PostType type, String fontFamily, Color primaryColor) {
+  Widget _buildPostTypeBadge(
+      PostType type, String fontFamily, Color primaryColor) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: type == PostType.offer 
-            ? const Color(0xFF2E7D32).withOpacity(0.9) 
+        color: type == PostType.offer
+            ? const Color(0xFF2E7D32).withOpacity(0.9)
             : const Color(0xFF1565C0).withOpacity(0.9),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: (type == PostType.offer 
-                ? const Color(0xFF2E7D32) 
-                : const Color(0xFF1565C0)).withOpacity(0.2),
+            color: (type == PostType.offer
+                    ? const Color(0xFF2E7D32)
+                    : const Color(0xFF1565C0))
+                .withOpacity(0.2),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -736,8 +841,8 @@ class _NearbyScreenState extends State<NearbyScreen> with TickerProviderStateMix
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            type == PostType.offer 
-                ? Icons.volunteer_activism_rounded 
+            type == PostType.offer
+                ? Icons.volunteer_activism_rounded
                 : Icons.help_outline_rounded,
             color: Colors.white,
             size: 14,
@@ -757,7 +862,8 @@ class _NearbyScreenState extends State<NearbyScreen> with TickerProviderStateMix
     );
   }
 
-  Widget _buildCategoryBadge(String category, String fontFamily, Color primaryColor) {
+  Widget _buildCategoryBadge(
+      String category, String fontFamily, Color primaryColor) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(

@@ -3,7 +3,7 @@ import 'package:madadgar/screens/auth/login_screen.dart';
 // Import other screens as you implement them
 import 'package:madadgar/screens/auth/register_screen.dart';
 // import 'package:madadgar/screens/auth/verify_screen.dart';
-//import 'package:madadgar/screens/auth/forgot_password_screen.dart';
+import 'package:madadgar/screens/auth/forgot_screen_password.dart';
 import 'package:madadgar/screens/home/home_screen.dart';
 import 'package:madadgar/screens/post/create_post_screen.dart';
  import 'package:madadgar/screens/post/post_detail_screen.dart';
@@ -15,7 +15,7 @@ class AppRoutes {
   // Define other routes as you implement them
   static const String register = '/register';
   // static const String verify = '/verify';
-  // static const String forgotPassword = '/forgot-password';
+  static const String forgotPassword = '/forgot-password';
   static const String home = '/home';
   static const String createPost = '/create-post';
    static const String postDetail = '/post-detail';
@@ -27,7 +27,7 @@ class AppRoutes {
     // Add other routes here as you implement them
     register: (context) => const RegisterScreen(),
     // verify: (context) => VerifyScreen(),
-    // forgotPassword: (context) => ForgotPasswordScreen(),
+    forgotPassword: (context) =>   ForgetPasswordScreen(),
     home: (context) => HomeScreen(),
      createPost: (context) => CreatePostScreen(),
     // postDetail: (context) => PostDetailScreen(),
