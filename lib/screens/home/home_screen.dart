@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:***REMOVED***/screens/home/nearby_screen.dart';
+import 'package:***REMOVED***/screens/profile/help_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:***REMOVED***/config/constants.dart';
 import 'package:***REMOVED***/config/theme.dart';
@@ -351,9 +352,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       title: 'Help Center',
                       primaryColor: primaryColor,
                       fontFamily: fontFamily,
-                      onTap: () {
+                     onTap: () {
                         Navigator.pop(context);
-                        // Navigate to help (implement as needed)
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => HelpScreen()),
+                        );
                       },
                     ),
 

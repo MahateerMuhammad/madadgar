@@ -4,7 +4,10 @@ import 'package:***REMOVED***/config/theme.dart';
 import 'package:***REMOVED***/screens/auth/login_screen.dart';
 import 'package:***REMOVED***/screens/post/my_posts_screen.dart';
 import 'package:***REMOVED***/services/auth_service.dart';
+import 'package:***REMOVED***/config/routes.dart';
 import 'package:***REMOVED***/services/user_service.dart';
+import 'package:***REMOVED***/screens/home/about.dart';
+import 'package:***REMOVED***/screens/auth/forgot_screen_password.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -418,7 +421,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 subtitle: "Reset your account password",
                 icon: Icons.lock_outline,
                 iconColor: Colors.blue[700]!,
-                onTap: _changePassword,
+               onTap: () {
+                       
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>const ForgetPasswordScreen()),
+                        );
+                      },
               ),
               _buildSettingCard(
                 title: "My Posts",
@@ -451,7 +461,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 subtitle: "Version info and app details",
                 icon: Icons.info_outline,
                 iconColor: Colors.teal[700]!,
-                onTap: _showAboutDialog,
+                onTap: () {
+                       
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>const AboutScreen()),
+                        );
+                      },
               ),
               
               const SizedBox(height: 24),
