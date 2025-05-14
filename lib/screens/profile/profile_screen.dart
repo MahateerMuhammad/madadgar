@@ -29,11 +29,13 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final UserService _userService = UserService();
+  final PostService _postService = PostService();
   UserModel? _userModel;
   bool _isLoading = true;
   bool _isUpdatingImage = false;
   bool _hasError = false;
   String _errorMessage = '';
+  int _postsCount = 0;
   
   // Animation controllers
   final double _cardElevation = 4.0;
@@ -62,10 +64,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       // Load user model from Firestore
       final userData = await _userService.getUserById(user.uid);
+      
+      // Fetch post count for the current user
+      final userPosts = await _postService.getUserPosts();
+      final postCount = userPosts.length;
 
       if (mounted) {
         setState(() {
           _userModel = userData;
+          _postsCount = postCount;
           _isLoading = false;
         });
       }
@@ -566,8 +573,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildStatsCard(String fontFamily, Color primaryColor) {
     final helpCount = _userModel?.helpCount ?? 0;
     final thankCount = _userModel?.thankCount ?? 0;
-    // Placeholder for additional stats
-    final postsCount = 12; // Replace with actual posts count
+    // Using actual posts count from database
     
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -587,10 +593,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          // Posts Count
+          // Posts Count - Now using the actual count from database
           _buildAnimatedStatItem(
             "Posts",
-            postsCount.toString(),
+            _postsCount.toString(),
             Icons.article_outlined,
             primaryColor,
             fontFamily,
