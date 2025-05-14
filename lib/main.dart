@@ -9,7 +9,7 @@ import 'package:madadgar/screens/home/home_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:madadgar/services/auth_service.dart';
 import 'package:madadgar/services/post_service.dart';
-
+import 'package:madadgar/services/edu_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:madadgar/firebase_options.dart';
 
@@ -32,6 +32,8 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider<AuthService>(create: (_) => AuthService()),
         Provider<PostService>(create: (_) => PostService()),
+         Provider<EducationalResourceService>(
+          create: (_) => EducationalResourceService())
       ],
       child: MaterialApp(
         title: 'Madadgar',

@@ -12,6 +12,8 @@ import 'package:madadgar/screens/chat/conversation_list.dart';
 import 'package:madadgar/screens/home/about.dart';
 import 'package:madadgar/screens/profile/settings_screen.dart';
 import 'package:madadgar/screens/post/my_posts_screen.dart';
+import 'package:madadgar/screens/education/education_resource_screen.dart';
+import 'package:madadgar/screens/education/upload_resource_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -26,14 +28,14 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Widget> _screens = [
     FeedScreen(),
     NearbyScreen(),
-    const Center(child: Text('Alerts coming soon...')),
+    EducationalResourcesScreen (),
     ProfileScreen(),
   ];
 
   final List<String> _titles = [
     'Feed',
     'Nearby',
-    'Alerts',
+    'Resources',
     'Profile',
   ];
 
@@ -143,9 +145,9 @@ class _HomeScreenState extends State<HomeScreen> {
               activeIcon: Icon(Icons.location_on),
               label: 'Nearby'),
           BottomNavigationBarItem(
-              icon: Icon(Icons.notifications_outlined),
-              activeIcon: Icon(Icons.notifications),
-              label: 'Alerts'),
+              icon: Icon(Icons.cast_for_education_outlined),
+              activeIcon: Icon(Icons.cast_for_education),
+              label: 'Education'),
           BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),
               activeIcon: Icon(Icons.person),
@@ -291,6 +293,32 @@ class _HomeScreenState extends State<HomeScreen> {
                         Navigator.pop(context);
                         Navigator.of(context).push(
                           MaterialPageRoute(builder: (_) => CreatePostScreen()),
+                        );
+                      },
+                    ),
+
+                       _buildDrawerItem(
+                      icon: Icons.cast_for_education,
+                      title: 'Educational Resources',
+                      primaryColor: primaryColor,
+                      fontFamily: fontFamily,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const EducationalResourcesScreen()),
+                        );
+                      },
+                      ),
+
+                      _buildDrawerItem(
+                      icon: Icons.add_circle,
+                      title: 'Create Educational Resource',
+                      primaryColor: primaryColor,
+                      fontFamily: fontFamily,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const UploadResourceScreen()),
                         );
                       },
                     ),

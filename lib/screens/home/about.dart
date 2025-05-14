@@ -94,7 +94,7 @@ class AboutScreen extends StatelessWidget {
                 ),
               ],
             ),
-            child: Center(
+            child:const Center(
               child: Icon(
                 Icons.volunteer_activism,
                 color: Colors.white,
@@ -102,7 +102,7 @@ class AboutScreen extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Text(
             'Madadgar',
             style: TextStyle(
@@ -112,7 +112,7 @@ class AboutScreen extends StatelessWidget {
               color: Colors.black87,
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             'Community Aid & Resource Sharing Platform',
             style: TextStyle(
@@ -122,7 +122,7 @@ class AboutScreen extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Container(
             margin: EdgeInsets.symmetric(horizontal: 40),
             padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
@@ -468,7 +468,7 @@ Widget _buildTeamSection(String fontFamily, Color primaryColor) {
                   child: _buildTeamMember(
                     name: 'Arsal Ajmal',
                     role: '233503@students.au.edu.pk',
-                    github: 'github',
+                    github: 'https://github.com/ArsalAjmal',
                     fontFamily: fontFamily,
                     primaryColor: primaryColor,
                   ),
@@ -485,7 +485,7 @@ Widget _buildTeamSection(String fontFamily, Color primaryColor) {
                   child: _buildTeamMember(
                     name: 'Maham kamran',
                     role: '233798@students.au.edu.pk',
-                    github: 'github',
+                    github: 'https://github.com/MahamMirza8',
                     fontFamily: fontFamily,
                     primaryColor: primaryColor,
                   ),
@@ -496,7 +496,7 @@ Widget _buildTeamSection(String fontFamily, Color primaryColor) {
                   child: _buildTeamMember(
                     name: 'Shah Abdullah',
                     role: '233585@students.au.edu.pk',
-                    github: 'github',
+                    github: 'https://github.com/Shah-Abdullah09',
                     fontFamily: fontFamily,
                     primaryColor: primaryColor,
                   ),
@@ -511,7 +511,7 @@ Widget _buildTeamSection(String fontFamily, Color primaryColor) {
                 child: _buildTeamMember(
                   name: 'Fatima Faisal',
                   role: '233545@students.au.edu.pk',
-                  github: 'github',
+                  github: 'https://github.com/syedafatima-cloud',
                   fontFamily: fontFamily,
                   primaryColor: primaryColor,
                 ),
