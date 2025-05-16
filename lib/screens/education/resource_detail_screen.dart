@@ -324,7 +324,7 @@ Widget build(BuildContext context) {
     },
     child: Scaffold(
       appBar: AppBar(
-        title: Text(_resource.title),
+        title: const Text('Resource Details'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
