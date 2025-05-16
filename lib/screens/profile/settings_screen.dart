@@ -8,6 +8,7 @@ import 'package:madadgar/config/routes.dart';
 import 'package:madadgar/services/user_service.dart';
 import 'package:madadgar/screens/home/about.dart';
 import 'package:madadgar/screens/auth/forgot_screen_password.dart';
+import 'package:madadgar/screens/verification/verification_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -314,6 +315,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  void _navigateToVerify(){
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const VerificationScreen()),
+    );
+  }
+
   void _showAboutDialog() {
     showDialog(
       context: context,
@@ -415,6 +423,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 icon: Icons.edit_outlined,
                 iconColor: primaryColor,
                 onTap: _navigateToEditProfile,
+              ),
+               _buildSettingCard(
+                title: "Verify Yourself",
+                subtitle: "Verify your identity for better trust",
+                icon: Icons.verified_user_outlined,
+                iconColor: Colors.green[700]!,
+                onTap: _navigateToVerify,
               ),
               _buildSettingCard(
                 title: "Change Password",
