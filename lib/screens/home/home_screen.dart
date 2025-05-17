@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:***REMOVED***/screens/home/nearby_screen.dart';
 import 'package:***REMOVED***/screens/profile/help_screen.dart';
@@ -14,6 +15,7 @@ import 'package:***REMOVED***/screens/profile/settings_screen.dart';
 import 'package:***REMOVED***/screens/post/my_posts_screen.dart';
 import 'package:***REMOVED***/screens/education/education_resource_screen.dart';
 import 'package:***REMOVED***/screens/education/upload_resource_screen.dart';
+import 'package:***REMOVED***/screens/education/my_edu_resources.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -319,6 +321,19 @@ class _HomeScreenState extends State<HomeScreen> {
                         Navigator.pop(context);
                         Navigator.of(context).push(
                           MaterialPageRoute(builder: (_) => const UploadResourceScreen()),
+                        );
+                      },
+                    ),
+
+                     _buildDrawerItem(
+                      icon: Icons.article,
+                      title: 'My Educational Resource',
+                      primaryColor: primaryColor,
+                      fontFamily: fontFamily,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const MyResourcesScreen()),
                         );
                       },
                     ),

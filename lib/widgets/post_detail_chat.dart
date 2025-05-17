@@ -1,7 +1,7 @@
+// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:***REMOVED***/models/post.dart';
-import 'package:***REMOVED***/models/chat.dart';
 import 'package:***REMOVED***/services/chat_service.dart';
 import 'package:***REMOVED***/services/user_service.dart'; // Make sure to import UserService
 import 'package:***REMOVED***/screens/chat/chat_screen.dart';
