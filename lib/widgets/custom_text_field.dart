@@ -1,4 +1,4 @@
-// TODO Implement this library.
+// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:madadgar/config/theme.dart'; // Assuming you have a custom theme
 

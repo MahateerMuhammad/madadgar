@@ -1,6 +1,6 @@
+// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:madadgar/config/theme.dart';
 import 'package:madadgar/models/post.dart';
 import 'package:madadgar/screens/post/post_detail_screen.dart';
 import 'package:madadgar/services/post_service.dart';

@@ -1,8 +1,7 @@
+// ignore_for_file: deprecated_member_use
 import 'dart:io';
 import 'dart:ui';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:madadgar/models/user.dart';
@@ -15,6 +14,7 @@ import 'dart:convert';
 import 'package:madadgar/services/auth_service.dart';
 import 'package:madadgar/services/post_service.dart';
 import 'package:madadgar/screens/profile/settings_screen.dart';
+import 'package:madadgar/screens/verification/verification_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -533,7 +533,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ),
-          
+          const SizedBox(height: 10),
+           Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: ElevatedButton(
+              onPressed: () {
+                // Navigate to My Posts
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) =>VerificationScreen()),
+                ).then((_) => _loadUserData());
+              },
+              style: ElevatedButton.styleFrom(
+                foregroundColor: primaryColor,
+                backgroundColor: primaryColor.withOpacity(0.1),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                minimumSize: const Size(double.infinity, 45),
+              ),
+              child: Text(
+                'Verify Yourself',
+                style: TextStyle(
+                  fontFamily: fontFamily,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
           const SizedBox(height: 30),
           
           // Verification Badge

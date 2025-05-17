@@ -1,10 +1,10 @@
+// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:madadgar/config/theme.dart';
 import 'package:madadgar/screens/auth/login_screen.dart';
 import 'package:madadgar/screens/post/my_posts_screen.dart';
-import 'package:madadgar/services/auth_service.dart';
-import 'package:madadgar/config/routes.dart';
+import 'package:madadgar/screens/profile/help_screen.dart';
 import 'package:madadgar/services/user_service.dart';
 import 'package:madadgar/screens/home/about.dart';
 import 'package:madadgar/screens/auth/forgot_screen_password.dart';
@@ -475,9 +475,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildSettingCard(
                 title: "Help Center",
                 subtitle: "FAQs and user guides",
-                icon: Icons.help_outline,
+                icon: Icons.help_outline, 
                 iconColor: Colors.amber[700]!,
-                onTap: () {},
+                onTap:  () {
+                       
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>const HelpScreen()),
+                        );
+                      },
               ),
               _buildSettingCard(
                 title: "Send Feedback",

@@ -1,10 +1,10 @@
+// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:madadgar/models/chat.dart';
 import 'package:madadgar/services/chat_service.dart';
 import 'package:madadgar/screens/chat/chat_screen.dart';
 import 'package:madadgar/services/post_service.dart';
-import 'package:madadgar/models/post.dart';
 import 'package:madadgar/config/theme.dart';
 
 class ConversationsListScreen extends StatefulWidget {
@@ -255,7 +255,7 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
                                             ),
                                           ],
                                         ),
-                                        constraints: BoxConstraints(
+                                        constraints: const BoxConstraints(
                                           minWidth: 18,
                                           minHeight: 18,
                                         ),
@@ -274,7 +274,7 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
                                     ),
                                 ],
                               ),
-                              SizedBox(width: 16),
+                              const SizedBox(width: 16),
                               
                               // Content
                               Expanded(

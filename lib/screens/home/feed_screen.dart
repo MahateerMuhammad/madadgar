@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +11,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:madadgar/screens/post/post_detail_screen.dart';
 import 'package:madadgar/models/user.dart';
 import 'package:madadgar/services/user_service.dart';
+import 'package:madadgar/widgets/report_dialog.dart';
+import 'package:madadgar/services/report_service.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -26,6 +29,7 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
   bool _isFilterExpanded = false;
   late AnimationController _animationController;
   late Animation<double> _filterAnimation;
+   final ReportService _reportService = ReportService();
   
   // Animation for list items
   final List<AnimationController> _itemAnimationControllers = [];
@@ -620,7 +624,7 @@ Widget _buildPostsList(List<PostModel> posts, String fontFamily, Color primaryCo
 
 
 
- Widget _buildPostCard(PostModel post, int index, String fontFamily, Color primaryColor, BoxConstraints constraints) {
+  Widget _buildPostCard(PostModel post, int index, String fontFamily, Color primaryColor, BoxConstraints constraints) {
   return FutureBuilder<UserModel>(
     future: UserService().getUserById(post.userId),
     builder: (context, userSnapshot) {
@@ -678,6 +682,7 @@ Widget _buildPostsList(List<PostModel> posts, String fontFamily, Color primaryCo
                   _loadPosts(); // Reload posts after coming back
                 }
               },
+              onLongPress: () => _showReportDialog(post), // Add this line
               borderRadius: BorderRadius.circular(20),
               splashColor: primaryColor.withOpacity(0.05),
               highlightColor: primaryColor.withOpacity(0.05),
@@ -719,16 +724,31 @@ Widget _buildPostsList(List<PostModel> posts, String fontFamily, Color primaryCo
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 if (post.images.isEmpty)
-                                  Align(
-                                    alignment: Alignment.topRight,
-                                    child: Text(
-                                      _formatPostDate(post.createdAt),
-                                      style: TextStyle(
-                                        fontFamily: fontFamily,
-                                        fontSize: 12,
-                                        color: Colors.grey[500],
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Spacer(),
+                                      Text(
+                                        _formatPostDate(post.createdAt),
+                                        style: TextStyle(
+                                          fontFamily: fontFamily,
+                                          fontSize: 12,
+                                          color: Colors.grey[500],
+                                        ),
                                       ),
-                                    ),
+                                      // Add report button here when no image
+                                      GestureDetector(
+                                        onTap: () => _showReportDialog(post),
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(left: 8.0),
+                                          child: Icon(
+                                            Icons.more_vert_rounded,
+                                            size: 16,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 
                                 // User info row
@@ -797,7 +817,7 @@ Widget _buildPostsList(List<PostModel> posts, String fontFamily, Color primaryCo
   );
 }
 
-
+// 4. Update the _buildPostImage method to include the report button
 Widget _buildPostImage(PostModel post, String fontFamily, Color primaryColor) {
   return SizedBox(
     height: 180,
@@ -835,24 +855,62 @@ Widget _buildPostImage(PostModel post, String fontFamily, Color primaryColor) {
         Positioned(
           top: 12,
           right: 12,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.6),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              _formatPostDate(post.createdAt),
-              style: TextStyle(
-                fontFamily: fontFamily,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: Colors.white,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.6),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  _formatPostDate(post.createdAt),
+                  style: TextStyle(
+                    fontFamily: fontFamily,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(width: 8),
+              // Add report button
+              GestureDetector(
+                onTap: () => _showReportDialog(post),
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.more_vert_rounded,
+                    size: 16,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ],
+    ),
+  );
+}
+
+// 5. Add this new method to show the report dialog
+void _showReportDialog(PostModel post) {
+  showDialog(
+    context: context,
+    barrierDismissible: true,
+    builder: (context) => ReportDialog(
+      postId: post.id,
+      reportedUserId: post.userId,
+      onReportSubmitted: () {
+        // Optionally reload posts after report submission
+        _loadPosts();
+      },
     ),
   );
 }

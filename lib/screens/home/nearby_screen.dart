@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:madadgar/services/post_service.dart';
@@ -8,6 +10,7 @@ import 'package:madadgar/config/theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:madadgar/models/user.dart';
 import 'package:madadgar/services/user_service.dart';
+import 'package:madadgar/widgets/report_dialog.dart';
 
 class NearbyScreen extends StatefulWidget {
   const NearbyScreen({super.key});
@@ -66,6 +69,90 @@ class _NearbyScreenState extends State<NearbyScreen>
       if (mounted) setState(() {});
     });
   }
+
+  void _showReportDialog(PostModel post) {
+  showDialog(
+    context: context,
+    builder: (context) => ReportDialog(
+      postId: post.id,
+      reportedUserId: post.userId,
+      onReportSubmitted: () {
+        // Optional: Refresh posts after report is submitted
+        _loadNearbyPosts();
+      },
+    ),
+  );
+}
+
+ void _showPostOptions(PostModel post) {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.transparent,
+    builder: (context) => Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle bar
+          Container(
+            width: 40,
+            height: 4,
+            margin: const EdgeInsets.symmetric(vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          
+          // Report option
+          ListTile(
+            leading: Icon(
+              Icons.flag_outlined,
+              color: Colors.red[600],
+            ),
+            title: Text(
+              'Report Post',
+              style: TextStyle(
+                fontFamily: MadadgarTheme.fontFamily,
+                color: Colors.red[600],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            onTap: () {
+              Navigator.pop(context);
+              _showReportDialog(post);
+            },
+          ),
+          
+          // Cancel option
+          ListTile(
+            leading: Icon(
+              Icons.close_rounded,
+              color: Colors.grey[600],
+            ),
+            title: Text(
+              'Cancel',
+              style: TextStyle(
+                fontFamily: MadadgarTheme.fontFamily,
+                color: Colors.grey[600],
+              ),
+            ),
+            onTap: () => Navigator.pop(context),
+          ),
+          
+          const SizedBox(height: 16),
+        ],
+      ),
+    ),
+  );
+}
+
 
   // Initialize animations for list items
   void _initItemAnimations(int itemCount) {
@@ -595,132 +682,151 @@ class _NearbyScreenState extends State<NearbyScreen>
   }
 
   // User info row with direct verification status parameter
-  Widget _buildUserInfoRow(PostModel post, int helpCount, int thankCount, String fontFamily, Color primaryColor, bool isUserVerified) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // User avatar
-        Container(
-          padding: const EdgeInsets.all(2),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: primaryColor.withOpacity(0.2),
-              width: 1.5,
-            ),
-          ),
-          child: CircleAvatar(
-            radius: 16,
-            backgroundColor: primaryColor.withOpacity(0.1),
-            backgroundImage: post.userImage.isNotEmpty
-              ? NetworkImage(post.userImage)
-              : null,
-            child: post.userImage.isEmpty
-              ? Text(
-                  post.userName.isNotEmpty 
-                    ? post.userName[0].toUpperCase()
-                    : '?',
-                  style: TextStyle(
-                    fontFamily: fontFamily,
-                    color: primaryColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                )
-              : null,
+ Widget _buildUserInfoRow(PostModel post, int helpCount, int thankCount, String fontFamily, Color primaryColor, bool isUserVerified) {
+  return Row(
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [
+      // User avatar
+      Container(
+        padding: const EdgeInsets.all(2),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: primaryColor.withOpacity(0.2),
+            width: 1.5,
           ),
         ),
-        const SizedBox(width: 10),
-        
-        // Username, verification badge, and location
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Flexible(
-                    child: Text(
-                      post.userName,
-                      style: TextStyle(
-                        fontFamily: fontFamily,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                        color: Colors.black.withOpacity(0.8),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  // Show appropriate verification status - immediately rendered from cache
-                  Padding(
-                    padding: const EdgeInsets.only(left: 4.0),
-                    child: isUserVerified
-                      ? Icon(
-                          Icons.verified_rounded,
-                          size: 16,
-                          color: const Color(0xFF1DA1F2), // Twitter-like verification blue
-                        )
-                      : Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            'Not Verified',
-                            style: TextStyle(
-                              fontFamily: fontFamily,
-                              fontSize: 10,
-                              color: Colors.grey[600],
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.location_on_rounded,
-                    size: 12,
-                    color: Colors.grey[600],
-                  ),
-                  const SizedBox(width: 2),
-                  Flexible(
-                    child: Text(
-                      post.region,
-                      style: TextStyle(
-                        fontFamily: fontFamily,
-                        fontSize: 11,
-                        color: Colors.grey[600],
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+        child: CircleAvatar(
+          radius: 16,
+          backgroundColor: primaryColor.withOpacity(0.1),
+          backgroundImage: post.userImage.isNotEmpty
+            ? NetworkImage(post.userImage)
+            : null,
+          child: post.userImage.isEmpty
+            ? Text(
+                post.userName.isNotEmpty 
+                  ? post.userName[0].toUpperCase()
+                  : '?',
+                style: TextStyle(
+                  fontFamily: fontFamily,
+                  color: primaryColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              )
+            : null,
         ),
-        
-        // User stats
-        Row(
+      ),
+      const SizedBox(width: 10),
+      
+      // Username, verification badge, and location
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildStatBadge(Icons.handshake_outlined, helpCount, fontFamily),
-            const SizedBox(width: 4),
-            _buildStatBadge(Icons.favorite_border_rounded, thankCount, fontFamily),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: Text(
+                    post.userName,
+                    style: TextStyle(
+                      fontFamily: fontFamily,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      color: Colors.black.withOpacity(0.8),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                // Show appropriate verification status
+                Padding(
+                  padding: const EdgeInsets.only(left: 4.0),
+                  child: isUserVerified
+                    ? const Icon(
+                        Icons.verified_rounded,
+                        size: 16,
+                        color: Color(0xFF1DA1F2),
+                      )
+                    : Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          'Not Verified',
+                          style: TextStyle(
+                            fontFamily: fontFamily,
+                            fontSize: 10,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                ),
+              ],
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.location_on_rounded,
+                  size: 12,
+                  color: Colors.grey[600],
+                ),
+                const SizedBox(width: 2),
+                Flexible(
+                  child: Text(
+                    post.region,
+                    style: TextStyle(
+                      fontFamily: fontFamily,
+                      fontSize: 11,
+                      color: Colors.grey[600],
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
-      ],
-    );
-  }
+      ),
+      
+      // User stats
+      Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildStatBadge(Icons.handshake_outlined, helpCount, fontFamily),
+          const SizedBox(width: 4),
+          _buildStatBadge(Icons.favorite_border_rounded, thankCount, fontFamily),
+          
+          // ADD THIS: Options button for post menu
+          const SizedBox(width: 8),
+          InkWell(
+            onTap: () => _showPostOptions(post),
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Icon(
+                Icons.more_vert_rounded,
+                size: 16,
+                color: Colors.grey[600],
+              ),
+            ),
+          ),
+        ],
+      ),
+    ],
+  );
+}
 
   // Other methods remain unchanged
   Widget _buildPostImage(PostModel post, String fontFamily, Color primaryColor) {

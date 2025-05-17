@@ -284,61 +284,85 @@ class _MyResourcesScreenState extends State<MyResourcesScreen> {
     );
   }
 
-  Widget _buildStatsCard() {
-    final totalResources = _myResources.length;
-    final totalDownloads = _myResources.fold<int>(0, (sum, resource) => sum + resource.downloadCount);
-    final totalLikes = _myResources.fold<int>(0, (sum, resource) => sum + resource.likeCount);
-    final verifiedCount = _myResources.where((resource) => resource.isVerified).length;
+  
+Widget _buildStatsCard() {
+  final totalResources = _myResources.length;
+  final totalDownloads = _myResources.fold<int>(0, (sum, resource) => sum + resource.downloadCount);
+  final totalLikes = _myResources.fold<int>(0, (sum, resource) => sum + resource.likeCount);
+  final verifiedCount = _myResources.where((resource) => resource.isVerified).length;
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildStatItem(Icons.folder, 'Resources', totalResources.toString()),
-          _buildStatItem(Icons.download, 'Downloads', totalDownloads.toString()),
-          _buildStatItem(Icons.favorite, 'Likes', totalLikes.toString()),
-          _buildStatItem(Icons.verified, 'Verified', verifiedCount.toString()),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatItem(IconData icon, String label, String value) {
-    return Column(
+  return Container(
+    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.15),
+          spreadRadius: 2,
+          blurRadius: 6,
+          offset: const Offset(0, 3),
+        ),
+      ],
+    ),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        Icon(icon, color: MadadgarTheme.primaryColor, size: 24),
-        const SizedBox(height: 4),
+        _buildStatItem(Icons.book_outlined, 'Resources', totalResources.toString()),
+        _buildDivider(),
+        _buildStatItem(Icons.file_download_outlined, 'Downloads', totalDownloads.toString()),
+        _buildDivider(),
+        _buildStatItem(Icons.favorite_outline_rounded, 'Likes', totalLikes.toString()),
+        _buildDivider(),
+        _buildStatItem(Icons.verified_outlined, 'Verified', verifiedCount.toString()),
+      ],
+    ),
+  );
+}
+
+Widget _buildDivider() {
+  return SizedBox(
+    height: 36,
+    child: VerticalDivider(
+      color: Colors.grey.shade200,
+      thickness: 1,
+      width: 1,
+    ),
+  );
+}
+
+Widget _buildStatItem(IconData icon, String label, String value) {
+  return Expanded(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          icon, 
+          color: MadadgarTheme.primaryColor, 
+          size: 22,
+        ),
+        const SizedBox(height: 6),
         Text(
           value,
           style: const TextStyle(
-            fontSize: 18,
+            fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
         ),
+        const SizedBox(height: 2),
         Text(
           label,
           style: TextStyle(
-            fontSize: 12,
+            fontSize: 11,
             color: Colors.grey.shade600,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ],
-    );
-  }
+    ),
+  );
+}
 
   @override
   void dispose() {

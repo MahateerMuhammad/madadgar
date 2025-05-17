@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:madadgar/services/post_service.dart';
@@ -56,124 +57,320 @@ class _MyPostsScreenState extends State<MyPostsScreen> {
   }
 
   Future<void> _updatePostStatus(String postId, PostStatus newStatus) async {
-    try {
-      setState(() => _isLoading = true);
-      
-      final postService = Provider.of<PostService>(context, listen: false);
-      final postIndex = _userPosts.indexWhere((post) => post.id == postId);
-      
-      if (postIndex != -1) {
-        final updatedPost = _userPosts[postIndex].copyWith(status: newStatus);
-        await postService.updatePost(updatedPost);
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Post marked as ${newStatus.toString().split('.').last}',
-              style: TextStyle(
-                fontFamily: MadadgarTheme.fontFamily,
-              ),
-            ),
-            backgroundColor: Colors.green[700],
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-        
-        await _loadUserPosts();
-      }
-    } catch (e) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Error updating post status: $e',
-            style: TextStyle(
-              fontFamily: MadadgarTheme.fontFamily,
-            ),
-          ),
-          backgroundColor: Colors.red[700],
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
-  }
-
-  Future<void> _showStatusUpdateDialog(PostModel post) async {
-    if (post.status != PostStatus.active) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'This post is already marked as ${post.status.toString().split('.').last}',
-            style: TextStyle(
-              fontFamily: MadadgarTheme.fontFamily,
-            ),
-          ),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
+  try {
+    setState(() => _isLoading = true);
     
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+    final postService = Provider.of<PostService>(context, listen: false);
+    final postIndex = _userPosts.indexWhere((post) => post.id == postId);
+    
+    if (postIndex != -1) {
+      final updatedPost = _userPosts[postIndex].copyWith(status: newStatus);
+      await postService.updatePost(updatedPost);
+      
+      // Enhanced success message to inform about conversations
+      String statusText = newStatus.toString().split('.').last;
+      String conversationMessage = newStatus == PostStatus.fulfilled 
+          ? "All related conversations have been notified and marked as fulfilled."
+          : "All related conversations have been notified and closed.";
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Post marked as $statusText',
+                style: TextStyle(
+                  fontFamily: MadadgarTheme.fontFamily,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                conversationMessage,
+                style: TextStyle(
+                  fontFamily: MadadgarTheme.fontFamily,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.green[700],
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 4), // Longer duration for more info
         ),
-        title: Text(
-          'Update Post Status',
+      );
+      
+      await _loadUserPosts();
+    }
+  } catch (e) {
+    setState(() => _isLoading = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Error updating post status: $e',
           style: TextStyle(
             fontFamily: MadadgarTheme.fontFamily,
-            fontWeight: FontWeight.bold,
           ),
         ),
+        backgroundColor: Colors.red[700],
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+}
+
+Future<void> _showStatusUpdateDialog(PostModel post) async {
+  if (post.status != PostStatus.active) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'This post is already marked as ${post.status.toString().split('.').last}',
+          style: TextStyle(
+            fontFamily: MadadgarTheme.fontFamily,
+          ),
+        ),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+    return;
+  }
+  
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      title: Text(
+        'Update Post Status',
+        style: TextStyle(
+          fontFamily: MadadgarTheme.fontFamily,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Change the status of this post to:',
+            style: TextStyle(
+              fontFamily: MadadgarTheme.fontFamily,
+            ),
+          ),
+          const SizedBox(height: 8),
+          // Add info about conversation impact
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.blue[50],
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.blue[200]!),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.info_outline,
+                  color: Colors.blue[700],
+                  size: 16,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'All related conversations will be automatically closed and participants will be notified.',
+                    style: TextStyle(
+                      fontFamily: MadadgarTheme.fontFamily,
+                      fontSize: 12,
+                      color: Colors.blue[700],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildStatusOption(
+            context,
+            PostStatus.fulfilled,
+            'Fulfilled',
+            'Mark this post as fulfilled when your need has been met or your offer has been accepted.',
+            Colors.green[700]!,
+            Icons.check_circle_outline,
+            post,
+          ),
+          const SizedBox(height: 12),
+          _buildStatusOption(
+            context,
+            PostStatus.closed,
+            'Closed',
+            'Mark this post as closed when you no longer want to receive responses.',
+            Colors.grey[700]!,
+            Icons.cancel_outlined,
+            post,
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(
+            'CANCEL',
+            style: TextStyle(
+              fontFamily: MadadgarTheme.fontFamily,
+              color: Colors.grey[700],
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Future<void> _deletePost(String postId) async {
+  try {
+    // Enhanced confirmation dialog
+    bool confirm = await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: Text(
+              'Delete Post?',
+              style: TextStyle(
+                fontFamily: MadadgarTheme.fontFamily,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Are you sure you want to delete this post? This action cannot be undone.',
+                  style: TextStyle(
+                    fontFamily: MadadgarTheme.fontFamily,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                // Add info about conversation impact
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.orange[50],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.orange[200]!),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.warning_amber_outlined,
+                        color: Colors.orange[700],
+                        size: 16,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'All related conversations will be closed and participants will be notified that the post has been deleted.',
+                          style: TextStyle(
+                            fontFamily: MadadgarTheme.fontFamily,
+                            fontSize: 12,
+                            color: Colors.orange[700],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(
+                  'CANCEL',
+                  style: TextStyle(
+                    fontFamily: MadadgarTheme.fontFamily,
+                    color: Colors.grey[700],
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text(
+                  'DELETE',
+                  style: TextStyle(
+                    fontFamily: MadadgarTheme.fontFamily,
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+
+    if (!confirm) return;
+
+    // Show loading indicator
+    setState(() => _isLoading = true);
+
+    // Delete the post
+    final postService = Provider.of<PostService>(context, listen: false);
+    await postService.deletePost(postId);
+
+    // Reload posts
+    await _loadUserPosts();
+
+    // Enhanced success message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Change the status of this post to:',
+              'Post deleted successfully',
               style: TextStyle(
                 fontFamily: MadadgarTheme.fontFamily,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 16),
-            _buildStatusOption(
-              context,
-              PostStatus.fulfilled,
-              'Fulfilled',
-              'Mark this post as fulfilled when your need has been met or your offer has been accepted.',
-              Colors.green[700]!,
-              Icons.check_circle_outline,
-              post,
-            ),
-            const SizedBox(height: 12),
-            _buildStatusOption(
-              context,
-              PostStatus.closed,
-              'Closed',
-              'Mark this post as closed when you no longer want to receive responses.',
-              Colors.grey[700]!,
-              Icons.cancel_outlined,
-              post,
+            const SizedBox(height: 4),
+            Text(
+              'All related conversations have been closed and participants notified.',
+              style: TextStyle(
+                fontFamily: MadadgarTheme.fontFamily,
+                fontSize: 12,
+              ),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(
-              'CANCEL',
-              style: TextStyle(
-                fontFamily: MadadgarTheme.fontFamily,
-                color: Colors.grey[700],
-              ),
-            ),
+        backgroundColor: Colors.green[700],
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 4),
+      ),
+    );
+  } catch (e) {
+    setState(() => _isLoading = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Error deleting post: $e',
+          style: TextStyle(
+            fontFamily: MadadgarTheme.fontFamily,
           ),
-        ],
+        ),
+        backgroundColor: Colors.red[700],
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
+}
+
 
   Widget _buildStatusOption(
     BuildContext context,
@@ -238,96 +435,7 @@ class _MyPostsScreenState extends State<MyPostsScreen> {
     );
   }
 
-  Future<void> _deletePost(String postId) async {
-    try {
-      // Show confirmation dialog
-      bool confirm = await showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              title: Text(
-                'Delete Post?',
-                style: TextStyle(
-                  fontFamily: MadadgarTheme.fontFamily,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              content: Text(
-                'Are you sure you want to delete this post? This action cannot be undone.',
-                style: TextStyle(
-                  fontFamily: MadadgarTheme.fontFamily,
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: Text(
-                    'CANCEL',
-                    style: TextStyle(
-                      fontFamily: MadadgarTheme.fontFamily,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: Text(
-                    'DELETE',
-                    style: TextStyle(
-                      fontFamily: MadadgarTheme.fontFamily,
-                      color: Colors.red,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ) ??
-          false;
-
-      if (!confirm) return;
-
-      // Show loading indicator
-      setState(() => _isLoading = true);
-
-      // Delete the post
-      final postService = Provider.of<PostService>(context, listen: false);
-      await postService.deletePost(postId);
-
-      // Reload posts
-      await _loadUserPosts();
-
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Post deleted successfully',
-            style: TextStyle(
-              fontFamily: MadadgarTheme.fontFamily,
-            ),
-          ),
-          backgroundColor: Colors.green[700],
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    } catch (e) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Error deleting post: $e',
-            style: TextStyle(
-              fontFamily: MadadgarTheme.fontFamily,
-            ),
-          ),
-          backgroundColor: Colors.red[700],
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
-  }
+ 
 
   String _formatPostDate(DateTime dateTime) {
     final now = DateTime.now();
