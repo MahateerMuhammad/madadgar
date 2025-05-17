@@ -27,7 +27,7 @@ class AppRoutes {
     // Add other routes here as you implement them
     register: (context) => const RegisterScreen(),
     // verify: (context) => VerifyScreen(),
-    forgotPassword: (context) =>   ForgetPasswordScreen(),
+    forgotPassword: (context) =>  ForgetPasswordScreen(),
     home: (context) => HomeScreen(),
      createPost: (context) => CreatePostScreen(),
     // postDetail: (context) => PostDetailScreen(),

@@ -15,13 +15,16 @@ class NearbyScreen extends StatefulWidget {
   @override
   _NearbyScreenState createState() => _NearbyScreenState();
 }
-
 class _NearbyScreenState extends State<NearbyScreen>
     with TickerProviderStateMixin {
   List<PostModel> _nearbyPosts = [];
   bool _isLoading = true;
   bool _hasError = false;
   String _errorMessage = '';
+  
+  // Add a map to store user verification data
+  Map<String, bool> _userVerificationMap = {};
+  Map<String, UserModel> _userDataMap = {};
   
   // Add scroll controller
   final ScrollController _scrollController = ScrollController();
@@ -95,6 +98,7 @@ class _NearbyScreenState extends State<NearbyScreen>
     }
   }
 
+  // Modified method to prefetch user data
   Future<void> _loadNearbyPosts() async {
     try {
       setState(() {
@@ -104,24 +108,47 @@ class _NearbyScreenState extends State<NearbyScreen>
 
       final authService = Provider.of<AuthService>(context, listen: false);
       final postService = Provider.of<PostService>(context, listen: false);
+      final currentUser = FirebaseAuth.instance.currentUser;
+      final String currentUserId = currentUser?.uid ?? '';
 
       final user = authService.currentUser;
       if (user == null || user.region.isEmpty) {
         throw Exception('User region not found.');
       }
 
-      // Correct method call with named arguments
+      // Get posts by region
       final posts = await postService.getPostsByRegion(
-        region: user.region, // Named parameter
+        region: user.region,
       );
+      
+      // Filter out posts created by the current user
+      final filteredPosts = posts.where((post) => post.userId != currentUserId).toList();
+      
+      // Clear previous user data cache
+      _userVerificationMap.clear();
+      _userDataMap.clear();
+      
+      // Prefetch user data for all posts
+      for (var post in filteredPosts) {
+        if (!_userVerificationMap.containsKey(post.userId)) {
+          try {
+            final userData = await UserService().getUserById(post.userId);
+            _userVerificationMap[post.userId] = userData.isVerified;
+            _userDataMap[post.userId] = userData;
+          } catch (e) {
+            print('Error fetching user data for ${post.userId}: $e');
+            _userVerificationMap[post.userId] = false;
+          }
+        }
+      }
 
       setState(() {
-        _nearbyPosts = posts;
+        _nearbyPosts = filteredPosts;
         _isLoading = false;
 
         // Initialize animations when posts are loaded
-        if (posts.isNotEmpty) {
-          _initItemAnimations(posts.length);
+        if (filteredPosts.isNotEmpty) {
+          _initItemAnimations(filteredPosts.length);
         }
       });
     } catch (e) {
@@ -382,7 +409,6 @@ class _NearbyScreenState extends State<NearbyScreen>
                       end: Offset.zero,
                     ).animate(_itemAnimations[index])
                   : const AlwaysStoppedAnimation(Offset.zero),
-              // Use LayoutBuilder to get constraints for the post card
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   return _buildPostCard(post, index, fontFamily, primaryColor, constraints);
@@ -395,191 +421,310 @@ class _NearbyScreenState extends State<NearbyScreen>
     );
   }
 
-  // Updated post card builder with constraint handling
+  // Modified post card builder that uses cached user data
   Widget _buildPostCard(
-      PostModel post, int index, String fontFamily, Color primaryColor, BoxConstraints constraints) {
-    return FutureBuilder<UserModel>(
-      future: UserService().getUserById(post.userId),
-      builder: (context, userSnapshot) {
-        // Default values in case user data isn't loaded yet
-        int helpCount = 0;
-        int thankCount = 0;
+    PostModel post, int index, String fontFamily, Color primaryColor, BoxConstraints constraints) {
+    
+    // Get user verification status from cache
+    final isUserVerified = _userVerificationMap[post.userId] ?? false;
+    
+    // Get user data from cache for help and thank counts
+    final userData = _userDataMap[post.userId];
+    final helpCount = userData?.helpCount ?? 0;
+    final thankCount = userData?.thankCount ?? 0;
 
-        if (userSnapshot.hasData) {
-          helpCount = userSnapshot.data!.helpCount;
-          thankCount = userSnapshot.data!.thankCount;
-        }
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Hero(
+        tag: 'post_${post.id}',
+        // Use a placeholder on Hero flight
+        flightShuttleBuilder: (flightContext, animation, direction, fromContext, toContext) {
+          return Material(
+            color: Colors.transparent,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+          );
+        },
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          elevation: 0,
+          child: InkWell(
+            onTap: () async {
+              final currentUser = FirebaseAuth.instance.currentUser;
 
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: Hero(
-            tag: 'post_${post.id}',
-            // Use a placeholder on Hero flight
-            flightShuttleBuilder: (flightContext, animation, direction, fromContext, toContext) {
-              return Material(
-                color: Colors.transparent,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
+              // Only increment if viewer is not the post creator
+              if (currentUser != null && currentUser.uid != post.userId) {
+                await PostService().incrementViewCount(post.id);
+              }
+
+              // Navigate and wait for return
+              await Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      PostDetailScreen(post: post),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                    return FadeTransition(opacity: animation, child: child);
+                  },
                 ),
               );
+
+              // Update state after navigation with proper delay
+              if (mounted) {
+                // Add a short delay to ensure proper frame scheduling
+                await Future.delayed(const Duration(milliseconds: 100));
+                _loadNearbyPosts(); // Reload posts after coming back
+              }
             },
-            child: Material(
-              color: Colors.transparent,
-              borderRadius: BorderRadius.circular(20),
-              elevation: 0,
-              child: InkWell(
-                onTap: () async {
-                  final currentUser = FirebaseAuth.instance.currentUser;
-
-                  // Only increment if viewer is not the post creator
-                  if (currentUser != null && currentUser.uid != post.userId) {
-                    await PostService().incrementViewCount(post.id);
-                  }
-
-                  // Navigate and wait for return
-                  await Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) =>
-                          PostDetailScreen(post: post),
-                      transitionsBuilder:
-                          (context, animation, secondaryAnimation, child) {
-                        return FadeTransition(opacity: animation, child: child);
-                      },
-                    ),
-                  );
-
-                  // Update state after navigation with proper delay
-                  if (mounted) {
-                    // Add a short delay to ensure proper frame scheduling
-                    await Future.delayed(const Duration(milliseconds: 100));
-                    _loadNearbyPosts(); // Reload posts after coming back
-                  }
-                },
+            borderRadius: BorderRadius.circular(20),
+            splashColor: primaryColor.withOpacity(0.05),
+            highlightColor: primaryColor.withOpacity(0.05),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
-                splashColor: primaryColor.withOpacity(0.05),
-                highlightColor: primaryColor.withOpacity(0.05),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 15,
-                        offset: const Offset(0, 5),
-                        spreadRadius: 1,
-                      ),
-                    ],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 15,
+                    offset: const Offset(0, 5),
+                    spreadRadius: 1,
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minHeight: 0,
-                        maxHeight: constraints.maxHeight,
-                      ),
-                      child: SingleChildScrollView(
-                        physics: NeverScrollableScrollPhysics(),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Post Image if available
-                            if (post.images.isNotEmpty)
-                              _buildPostImage(post, fontFamily, primaryColor),
-                            
-                            // Content section
-                            Padding(
-                              padding: EdgeInsets.all(post.images.isNotEmpty ? 14.0 : 16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: 0,
+                    maxHeight: constraints.maxHeight,
+                  ),
+                  child: SingleChildScrollView(
+                    physics: NeverScrollableScrollPhysics(),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Content section (removed image section)
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Align(
+                                alignment: Alignment.topRight,
+                                child: Text(
+                                  _formatPostDate(post.createdAt),
+                                  style: TextStyle(
+                                    fontFamily: fontFamily,
+                                    fontSize: 12,
+                                    color: Colors.grey[500],
+                                  ),
+                                ),
+                              ),
+                              
+                              // User info row - with cached verification status
+                              _buildUserInfoRow(post, helpCount, thankCount, fontFamily, primaryColor, isUserVerified),
+                              
+                              const SizedBox(height: 12),
+                              
+                              // Post badges (type & category)
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
                                 children: [
-                                  if (post.images.isEmpty)
-                                    Align(
-                                      alignment: Alignment.topRight,
-                                      child: Text(
-                                        _formatPostDate(post.createdAt),
-                                        style: TextStyle(
-                                          fontFamily: fontFamily,
-                                          fontSize: 12,
-                                          color: Colors.grey[500],
-                                        ),
-                                      ),
-                                    ),
-                                  
-                                  // User info row
-                                  _buildUserInfoRow(post, helpCount, thankCount, fontFamily, primaryColor),
-                                  
-                                  const SizedBox(height: 12),
-                                  
-                                  // Post badges (type & category)
-                                  Wrap(
-                                    spacing: 8,
-                                    runSpacing: 8,
-                                    children: [
-                                      _buildPostTypeBadge(post.type, fontFamily, primaryColor),
-                                      _buildCategoryBadge(post.category, fontFamily, primaryColor),
-                                    ],
-                                  ),
-                                  
-                                  const SizedBox(height: 12),
-                                  
-                                  // Post title with limited lines
-                                  Text(
-                                    post.title,
-                                    style: TextStyle(
-                                      fontFamily: fontFamily,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black.withOpacity(0.85),
-                                      height: 1.2,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 8),
-                                  
-                                  // Post description with limited lines
-                                  Text(
-                                    post.description,
-                                    style: TextStyle(
-                                      fontFamily: fontFamily,
-                                      fontSize: 13,
-                                      color: Colors.black.withOpacity(0.65),
-                                      height: 1.4,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  
-                                  const SizedBox(height: 12),
-                                  
-                                  // Footer row
-                                  _buildFooterRow(post, fontFamily, primaryColor),
+                                  _buildPostTypeBadge(post.type, fontFamily, primaryColor),
+                                  _buildCategoryBadge(post.category, fontFamily, primaryColor),
                                 ],
                               ),
-                            ),
-                          ],
+                              
+                              const SizedBox(height: 12),
+                              
+                              // Post title with limited lines
+                              Text(
+                                post.title,
+                                style: TextStyle(
+                                  fontFamily: fontFamily,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black.withOpacity(0.85),
+                                  height: 1.2,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 8),
+                              
+                              // Post description with limited lines
+                              Text(
+                                post.description,
+                                style: TextStyle(
+                                  fontFamily: fontFamily,
+                                  fontSize: 13,
+                                  color: Colors.black.withOpacity(0.65),
+                                  height: 1.4,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              
+                              const SizedBox(height: 12),
+                              
+                              // Footer row
+                              _buildFooterRow(post, fontFamily, primaryColor),
+                            ],
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 ),
               ),
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
-  // Extract the post image to a separate method
+  // User info row with direct verification status parameter
+  Widget _buildUserInfoRow(PostModel post, int helpCount, int thankCount, String fontFamily, Color primaryColor, bool isUserVerified) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // User avatar
+        Container(
+          padding: const EdgeInsets.all(2),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: primaryColor.withOpacity(0.2),
+              width: 1.5,
+            ),
+          ),
+          child: CircleAvatar(
+            radius: 16,
+            backgroundColor: primaryColor.withOpacity(0.1),
+            backgroundImage: post.userImage.isNotEmpty
+              ? NetworkImage(post.userImage)
+              : null,
+            child: post.userImage.isEmpty
+              ? Text(
+                  post.userName.isNotEmpty 
+                    ? post.userName[0].toUpperCase()
+                    : '?',
+                  style: TextStyle(
+                    fontFamily: fontFamily,
+                    color: primaryColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                )
+              : null,
+          ),
+        ),
+        const SizedBox(width: 10),
+        
+        // Username, verification badge, and location
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: Text(
+                      post.userName,
+                      style: TextStyle(
+                        fontFamily: fontFamily,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: Colors.black.withOpacity(0.8),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  // Show appropriate verification status - immediately rendered from cache
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4.0),
+                    child: isUserVerified
+                      ? Icon(
+                          Icons.verified_rounded,
+                          size: 16,
+                          color: const Color(0xFF1DA1F2), // Twitter-like verification blue
+                        )
+                      : Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            'Not Verified',
+                            style: TextStyle(
+                              fontFamily: fontFamily,
+                              fontSize: 10,
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.location_on_rounded,
+                    size: 12,
+                    color: Colors.grey[600],
+                  ),
+                  const SizedBox(width: 2),
+                  Flexible(
+                    child: Text(
+                      post.region,
+                      style: TextStyle(
+                        fontFamily: fontFamily,
+                        fontSize: 11,
+                        color: Colors.grey[600],
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        
+        // User stats
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildStatBadge(Icons.handshake_outlined, helpCount, fontFamily),
+            const SizedBox(width: 4),
+            _buildStatBadge(Icons.favorite_border_rounded, thankCount, fontFamily),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // Other methods remain unchanged
   Widget _buildPostImage(PostModel post, String fontFamily, Color primaryColor) {
+    // Implementation remains unchanged
     return SizedBox(
       height: 180,
       width: double.infinity,
@@ -638,102 +783,6 @@ class _NearbyScreenState extends State<NearbyScreen>
     );
   }
 
-  // Extract the user info row to a separate method
-  Widget _buildUserInfoRow(PostModel post, int helpCount, int thankCount, String fontFamily, Color primaryColor) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // User avatar
-        Container(
-          padding: const EdgeInsets.all(2),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: primaryColor.withOpacity(0.2),
-              width: 1.5,
-            ),
-          ),
-          child: CircleAvatar(
-            radius: 16,
-            backgroundColor: primaryColor.withOpacity(0.1),
-            backgroundImage: post.userImage.isNotEmpty
-              ? NetworkImage(post.userImage)
-              : null,
-            child: post.userImage.isEmpty
-              ? Text(
-                  post.userName.isNotEmpty 
-                    ? post.userName[0].toUpperCase()
-                    : '?',
-                  style: TextStyle(
-                    fontFamily: fontFamily,
-                    color: primaryColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                )
-              : null,
-          ),
-        ),
-        const SizedBox(width: 10),
-        
-        // Username and location
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                post.userName,
-                style: TextStyle(
-                  fontFamily: fontFamily,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                  color: Colors.black.withOpacity(0.8),
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.location_on_rounded,
-                    size: 12,
-                    color: Colors.grey[600],
-                  ),
-                  const SizedBox(width: 2),
-                  Flexible(
-                    child: Text(
-                      post.region,
-                      style: TextStyle(
-                        fontFamily: fontFamily,
-                        fontSize: 11,
-                        color: Colors.grey[600],
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        
-        // User stats
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildStatBadge(Icons.handshake_outlined, helpCount, fontFamily),
-            const SizedBox(width: 4),
-            _buildStatBadge(Icons.favorite_border_rounded, thankCount, fontFamily),
-          ],
-        ),
-      ],
-    );
-  }
-
-  // Extract the footer row to a separate method
   Widget _buildFooterRow(PostModel post, String fontFamily, Color primaryColor) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,

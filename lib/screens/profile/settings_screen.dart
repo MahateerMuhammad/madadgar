@@ -9,6 +9,7 @@ import 'package:***REMOVED***/services/user_service.dart';
 import 'package:***REMOVED***/screens/home/about.dart';
 import 'package:***REMOVED***/screens/auth/forgot_screen_password.dart';
 import 'package:***REMOVED***/screens/verification/verification_screen.dart';
+import 'package:***REMOVED***/screens/education/my_edu_resources.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -446,13 +447,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       },
               ),
               _buildSettingCard(
+                title: "My Education Resources",
+                subtitle: "View and manage your resources",
+                icon: Icons.cast_for_education_outlined,
+                iconColor: Colors.green[700]!,
+                onTap: () {
+                       
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>const MyResourcesScreen ()),
+                        );
+                      },
+              ),
+
+               _buildSettingCard(
                 title: "My Posts",
                 subtitle: "View and manage your posts",
                 icon: Icons.article_outlined,
                 iconColor: Colors.green[700]!,
                 onTap: _navigateToMyPosts,
               ),
-              
               const SizedBox(height: 24),
               
               // Support & Feedback Section
