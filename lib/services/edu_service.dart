@@ -13,9 +13,9 @@ class EducationalResourceService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final UserService _userService = UserService();
   final String _collectionName = 'educational_resources';
-  final String _likesCollectionName = 'resource_likes'; // New collection to track likes
+  final String _likesCollectionName = 'resource_likes'; 
   
-  // Cloudinary config
+  
   final String cloudName = "ddppfyrcv";
   final String presetName = "madadgar";
   final String uploadUrl = "https://api.cloudinary.com/v1_1/ddppfyrcv/auto/upload";

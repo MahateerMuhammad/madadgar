@@ -9,6 +9,7 @@ import 'package:madadgar/services/edu_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:madadgar/config/theme.dart';
 
 class ResourceDetailScreen extends StatefulWidget {
   final EducationalResourceModel resource;
@@ -233,13 +234,14 @@ class _ResourceDetailScreenState extends State<ResourceDetailScreen> {
         _resource = _resource.copyWith(likeCount: _likeCount);
       });
       
-      // Set the result to be returned to the previous screen
-      // This will signal that the resource has been updated
-      Navigator.pop(context, {
-        'updated': true,
-        'resourceId': _resource.id,
-        'likeCount': _likeCount
-      });
+      // Show success message but stay on the current screen
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Resource liked successfully!'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
     }
   } catch (e) {
     // If there's an error, revert the UI changes
@@ -302,15 +304,151 @@ class _ResourceDetailScreenState extends State<ResourceDetailScreen> {
       );
     }
   }
-}// In ResourceDetailScreen.dart
-// Split the like functionality from the navigation action
-// Do not auto-navigate after liking
+}
 
+  Widget _buildSectionTitle(String title, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          Icon(
+            icon, 
+            size: 18, 
+            color: Colors.black87,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: TextStyle(
+              fontFamily: MadadgarTheme.fontFamily,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildInfoCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color iconColor,
+    VoidCallback? onTap,
+  }) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      elevation: 0,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.withOpacity(0.1), width: 1),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: iconColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            color: iconColor,
+            size: 24,
+          ),
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            fontFamily: MadadgarTheme.fontFamily,
+            fontWeight: FontWeight.w500,
+            fontSize: 15,
+            color: Colors.black87,
+          ),
+        ),
+        subtitle: Text(
+          value,
+          style: TextStyle(
+            fontFamily: MadadgarTheme.fontFamily,
+            fontSize: 13,
+            color: Colors.black54,
+          ),
+        ),
+        trailing: onTap != null ? Icon(
+          Icons.arrow_forward_ios,
+          size: 16,
+          color: Colors.grey[400],
+        ) : null,
+        onTap: onTap,
+      ),
+    );
+  }
 
-
+  Widget _buildActionCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color iconColor,
+    required VoidCallback onTap,
+    bool enabled = true,
+  }) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      elevation: 0,
+      color: enabled ? Colors.white : Colors.grey[50],
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.withOpacity(0.1), width: 1),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: enabled ? iconColor.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            color: enabled ? iconColor : Colors.grey,
+            size: 24,
+          ),
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            fontFamily: MadadgarTheme.fontFamily,
+            fontWeight: FontWeight.w500,
+            fontSize: 15,
+            color: enabled ? Colors.black87 : Colors.grey,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(
+            fontFamily: MadadgarTheme.fontFamily,
+            fontSize: 13,
+            color: enabled ? Colors.black54 : Colors.grey[400],
+          ),
+        ),
+        trailing: enabled ? Icon(
+          Icons.arrow_forward_ios,
+          size: 16,
+          color: Colors.grey[400],
+        ) : null,
+        onTap: enabled ? onTap : null,
+      ),
+    );
+  }
 
   @override
 Widget build(BuildContext context) {
+  final fontFamily = MadadgarTheme.fontFamily;
+  final primaryColor = MadadgarTheme.primaryColor;
+
   // ignore: deprecated_member_use
   return WillPopScope(
     onWillPop: () async {
@@ -323,10 +461,21 @@ Widget build(BuildContext context) {
       return false; // Let our custom navigation handle it
     },
     child: Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text('Resource Details'),
+        title: Text(
+          'Resource Details',
+          style: TextStyle(
+            fontFamily: fontFamily,
+            fontWeight: FontWeight.bold,
+            color: MadadgarTheme.primaryColor,
+          ),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios, color: MadadgarTheme.primaryColor),
           onPressed: () {
             // Return with updated resource when back button is pressed
             Navigator.pop(context, {
@@ -339,308 +488,317 @@ Widget build(BuildContext context) {
         actions: [
           if (_isMine)
             IconButton(
-              icon: const Icon(Icons.delete),
+              icon: const Icon(Icons.delete, color: Colors.red),
               onPressed: _deleteResource,
               tooltip: 'Delete Resource',
             ),
           IconButton(
-            icon: const Icon(Icons.share),
+            icon: const Icon(Icons.share, color: MadadgarTheme.primaryColor),
             onPressed: _shareResource,
             tooltip: 'Share Resource',
           ),
         ],
       ),
       body: _isLoading 
-        ? const Center(child: CircularProgressIndicator())
-        : SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        ? Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+            ),
+          )
+        : ListView(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             children: [
               // Resource image or type icon
-              if (_resource.thumbnailUrl.isNotEmpty)
-                AspectRatio(
-                  aspectRatio: 16 / 9,
-                  child: CachedNetworkImage(
-                    imageUrl: _resource.thumbnailUrl,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => const Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                    errorWidget: (context, url, error) => const Center(
-                      child: Icon(Icons.error),
-                    ),
+              Card(
+                margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                elevation: 0,
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: Colors.grey.withOpacity(0.1), width: 1),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: _resource.thumbnailUrl.isNotEmpty
+                    ? AspectRatio(
+                        aspectRatio: 16 / 9,
+                        child: CachedNetworkImage(
+                          imageUrl: _resource.thumbnailUrl,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            color: Colors.grey[100],
+                            child: const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            color: Colors.grey[100],
+                            child: const Center(
+                              child: Icon(Icons.error, size: 64, color: Colors.grey),
+                            ),
+                          ),
+                        ),
+                      )
+                    : AspectRatio(
+                        aspectRatio: 16 / 9,
+                        child: Container(
+                          color: Colors.grey[100],
+                          child: const Center(
+                            child: Icon(
+                              Icons.insert_drive_file,
+                              size: 64,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ),
+                ),
+              ),
+              
+              const SizedBox(height: 24),
+              
+              // Basic Information Section
+              _buildSectionTitle("Basic Information", Icons.info_outline),
+              _buildInfoCard(
+                title: "Title",
+                value: _resource.title,
+                icon: Icons.title,
+                iconColor: primaryColor,
+              ),
+              
+              // Owner badge if it's the user's resource
+              if (_isMine)
+                Card(
+                  margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  elevation: 0,
+                  color: Colors.amber[50],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: Colors.amber.withOpacity(0.3), width: 1),
                   ),
-                )
-              else
-                AspectRatio(
-                  aspectRatio: 16 / 9,
-                  child: Container(
-                    color: Colors.grey[200],
-                    child: const Center(
-                      child: Icon(
-                        Icons.insert_drive_file,
-                        size: 64,
-                        color: Colors.grey,
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.person,
+                        color: Colors.amber,
+                        size: 24,
+                      ),
+                    ),
+                    title: Text(
+                      "Your Resource",
+                      style: TextStyle(
+                        fontFamily: fontFamily,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 15,
+                        color: Colors.amber[800],
+                      ),
+                    ),
+                    subtitle: Text(
+                      "You are the owner of this resource",
+                      style: TextStyle(
+                        fontFamily: fontFamily,
+                        fontSize: 13,
+                        color: Colors.amber[700],
                       ),
                     ),
                   ),
                 ),
               
-              // Resource details
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Title with verification badge
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            _resource.title,
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        if (_resource.isVerified)
-                          const Tooltip(
-                            message: 'Verified Content',
-                            child: Icon(
-                              Icons.verified,
-                              color: Colors.blue,
-                            ),
-                          ),
-                      ],
-                    ),
-                    
-                    const SizedBox(height: 8),
-                    
-                    // Owner badge if it's the user's resource
-                    if (_isMine)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.amber[100],
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.person, size: 16, color: Colors.amber),
-                            SizedBox(width: 4),
-                            Text(
-                              'Your Resource',
-                              style: TextStyle(
-                                color: Colors.amber,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
+              if (_resource.isVerified)
+                Card(
+                  margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  elevation: 0,
+                  color: Colors.blue[50],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: Colors.blue.withOpacity(0.3), width: 1),
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                    
-                    const SizedBox(height: 8),
-                    
-                    // Category and subcategory
-                    Row(
-                      children: [
-                        Chip(
-                          label: Text(_resource.category),
-                          backgroundColor: Colors.blue[100],
-                        ),
-                        if (_resource.subCategory.isNotEmpty) ...[
-                          const SizedBox(width: 8),
-                          Chip(
-                            label: Text(_resource.subCategory),
-                            backgroundColor: Colors.green[100],
-                          ),
-                        ],
-                      ],
+                      child: const Icon(
+                        Icons.verified,
+                        color: Colors.blue,
+                        size: 24,
+                      ),
                     ),
-                    
-                    const SizedBox(height: 16),
-                    
-                    // Uploader info and date
-                    Row(
-                      children: [
-                        const Icon(Icons.person, size: 16, color: Colors.grey),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Uploaded by ${_resource.uploaderName}',
-                          style: TextStyle(color: Colors.grey[600]),
-                        ),
-                        const Spacer(),
-                        const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${_resource.createdAt.day}/${_resource.createdAt.month}/${_resource.createdAt.year}',
-                          style: TextStyle(color: Colors.grey[600]),
-                        ),
-                      ],
-                    ),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Description
-                    const Text(
-                      'Description',
+                    title: Text(
+                      "Verified Content",
                       style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        fontFamily: fontFamily,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 15,
+                        color: Colors.blue[800],
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Text(_resource.description),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // File information
-                    const Text(
-                      'File Information',
+                    subtitle: Text(
+                      "This resource has been verified",
                       style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        fontFamily: fontFamily,
+                        fontSize: 13,
+                        color: Colors.blue[700],
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: Icon(
-                        Icons.insert_drive_file,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                      title: const Text('File Type'),
-                      subtitle: Text(_resource.fileType.toUpperCase()),
-                    ),
-                    
-                    const SizedBox(height: 8),
-                    
-                    // Stats row
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Column(
-                          children: [
-                            const Icon(Icons.download, color: Colors.blue),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${_resource.downloadCount}',
-                              style: const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            const Text('Downloads'),
-                          ],
-                        ),
-                        Column(
-                          children: [
-                            Icon(
-                              Icons.thumb_up,
-                              color: _isLiked ? Colors.green : Colors.grey,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '$_likeCount', // Use the local state variable
-                              style: const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            const Text('Likes'),
-                          ],
-                        ),
-                      ],
-                    ),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Tags
-                    if (_resource.tags.isNotEmpty) ...[
-                      const Text(
-                        'Tags',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: _resource.tags.map((tag) {
-                          return Chip(
-                            label: Text(tag),
-                            backgroundColor: Colors.grey[200],
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 24),
-                    ],
-                  ],
+                  ),
                 ),
+              
+              _buildInfoCard(
+                title: "Description",
+                value: _resource.description,
+                icon: Icons.description,
+                iconColor: Colors.green[700]!,
               ),
+              
+              _buildInfoCard(
+                title: "Category",
+                value: _resource.category,
+                icon: Icons.category,
+                iconColor: Colors.purple[700]!,
+              ),
+              
+              if (_resource.subCategory.isNotEmpty)
+                _buildInfoCard(
+                  title: "Sub Category",
+                  value: _resource.subCategory,
+                  icon: Icons.subdirectory_arrow_right,
+                  iconColor: Colors.indigo[700]!,
+                ),
+              
+              const SizedBox(height: 24),
+              
+              // Upload Information Section
+              _buildSectionTitle("Upload Information", Icons.cloud_upload_outlined),
+              _buildInfoCard(
+                title: "Uploaded by",
+                value: _resource.uploaderName,
+                icon: Icons.person_outline,
+                iconColor: Colors.teal[700]!,
+              ),
+              
+              _buildInfoCard(
+                title: "Upload Date",
+                value: '${_resource.createdAt.day}/${_resource.createdAt.month}/${_resource.createdAt.year}',
+                icon: Icons.calendar_today,
+                iconColor: Colors.orange[700]!,
+              ),
+              
+              const SizedBox(height: 24),
+              
+              // File Information Section
+              _buildSectionTitle("File Information", Icons.insert_drive_file_outlined),
+              _buildInfoCard(
+                title: "File Type",
+                value: _resource.fileType.toUpperCase(),
+                icon: Icons.description,
+                iconColor: Colors.red[700]!,
+              ),
+              
+              const SizedBox(height: 24),
+              
+              // Statistics Section
+              _buildSectionTitle("Statistics", Icons.analytics_outlined),
+              _buildInfoCard(
+                title: "Downloads",
+                value: '${_resource.downloadCount}',
+                icon: Icons.download,
+                iconColor: Colors.blue[700]!,
+              ),
+              
+              _buildInfoCard(
+                title: "Likes",
+                value: '$_likeCount',
+                icon: _isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
+                iconColor: _isLiked ? Colors.green[700]! : Colors.grey[700]!,
+              ),
+              
+              const SizedBox(height: 24),
+              
+              // Tags Section
+              if (_resource.tags.isNotEmpty) ...[
+                _buildSectionTitle("Tags", Icons.label_outline),
+                Card(
+                  margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  elevation: 0,
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: Colors.grey.withOpacity(0.1), width: 1),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _resource.tags.map((tag) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: Colors.grey.withOpacity(0.3)),
+                          ),
+                          child: Text(
+                            tag,
+                            style: TextStyle(
+                              fontFamily: fontFamily,
+                              fontSize: 12,
+                              color: Colors.grey[700],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
+              
+              // Actions Section
+              _buildSectionTitle("Actions", Icons.touch_app_outlined),
+              
+              // Show like button only if user can like
+              if (_canLike || _isLiked)
+                _buildActionCard(
+                  title: _isLiked ? "Liked" : "Like Resource",
+                  subtitle: _isLiked ? "You liked this resource" : "Show your appreciation",
+                  icon: _isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
+                  iconColor: _isLiked ? Colors.green[700]! : Colors.blue[700]!,
+                  onTap: _toggleLike,
+                  enabled: _canLike,
+                ),
+              
+              // Show download button only if user can download
+              if (_canDownload)
+                _buildActionCard(
+                  title: "Download Resource",
+                  subtitle: "Download this file to your device",
+                  icon: Icons.download,
+                  iconColor: Colors.indigo[700]!,
+                  onTap: _downloadResource,
+                ),
+              
+              _buildActionCard(
+                title: "Share Resource",
+                subtitle: "Share this resource with others",
+                icon: Icons.share,
+                iconColor: Colors.orange[700]!,
+                onTap: _shareResource,
+              ),
+              
+              const SizedBox(height: 40),
             ],
           ),
-        ),
-      bottomNavigationBar: _isLoading
-        ? null
-        : BottomAppBar(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                // Like button with loading state
-               TextButton.icon(
-                onPressed: _canLike ? _toggleLike : null,
-                icon: Icon(
-                  _isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
-                  color: _isLiked 
-                    ? Colors.blue 
-                    : _canLike 
-                      ? null 
-                      : Colors.grey,
-                ),
-                label: Text(
-                  _isLiked 
-                    ? 'Liked' 
-                    : _isMine 
-                      ? 'Your Post'
-                      : 'Like',
-                  style: TextStyle(
-                    color: _isLiked 
-                      ? Colors.blue 
-                      : _canLike 
-                        ? null 
-                        : Colors.grey,
-                  ),
-                ),
-              ),
-
-                
-                // Share button
-                TextButton.icon(
-                  onPressed: _shareResource,
-                  icon: const Icon(Icons.share),
-                  label: const Text('Share'),
-                ),
-                
-                // Download button (primary action)
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: ElevatedButton.icon(
-                      onPressed: _canDownload ? _downloadResource : null,
-                      icon: const Icon(Icons.download),
-                      label: Text(_canDownload ? 'Download' : _isMine ? 'Your Post' : 'Cannot Download'),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        disabledBackgroundColor: Colors.grey[300],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
     ),
     );
   }

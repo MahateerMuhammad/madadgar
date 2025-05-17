@@ -231,15 +231,20 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      
       appBar: AppBar(
+        backgroundColor: Colors.white,
         elevation: 0,
         title: const Text(
           'Upload Resource',
-          style: TextStyle(fontWeight: FontWeight.w600),
+          style: TextStyle(
+            color: MadadgarTheme.primaryColor,
+            fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+         
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20,color: MadadgarTheme.primaryColor,),
           onPressed: () => Navigator.pop(context),
         ),
       ),

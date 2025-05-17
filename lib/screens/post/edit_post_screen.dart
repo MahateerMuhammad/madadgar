@@ -134,6 +134,10 @@ void initState() {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20,color: MadadgarTheme.primaryColor,),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Text(
           'Edit Post',
           style: TextStyle(

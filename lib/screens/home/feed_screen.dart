@@ -30,6 +30,9 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
   // Animation for list items
   final List<AnimationController> _itemAnimationControllers = [];
   final List<Animation<double>> _itemAnimations = [];
+  
+  // Add a map to store user verification status
+  final Map<String, bool> _userVerificationStatus = {};
 
  @override
 void didChangeDependencies() {
@@ -111,14 +114,46 @@ void initState() {
     }
   }
 
-  void _loadPosts() {
+  Future<void> _preloadUserVerificationStatus(List<PostModel> posts) async {
+    final userService = UserService();
+    final Set<String> uniqueUserIds = posts.map((post) => post.userId).toSet();
+    
+    // Create a list of futures for parallel execution
+    final futures = uniqueUserIds.map((userId) async {
+      try {
+        final user = await userService.getUserById(userId);
+        _userVerificationStatus[userId] = user.isVerified;
+      } catch (e) {
+        // Handle error - default to not verified
+        _userVerificationStatus[userId] = false;
+      }
+    }).toList();
+    
+    // Wait for all futures to complete
+    await Future.wait(futures);
+  }
+
+
+   void _loadPosts() {
     final postService = Provider.of<PostService>(context, listen: false);
+    final currentUser = FirebaseAuth.instance.currentUser;
+    final String currentUserId = currentUser?.uid ?? '';
+    
     setState(() {
+      // Fetch posts and then filter out current user's posts
       _postsFuture = postService.getPosts(
         category: _selectedCategory == 'All' ? null : _selectedCategory,
         type: _selectedType,
         status: PostStatus.active,
-      );
+      ).then((posts) async {
+        // Filter out posts created by the current user
+        final filteredPosts = posts.where((post) => post.userId != currentUserId).toList();
+        
+        // Fetch verification status for all users in one go
+        await _preloadUserVerificationStatus(filteredPosts);
+        
+        return filteredPosts;
+      });
     });
   }
 
@@ -180,7 +215,7 @@ void initState() {
                   ),
                 ],
               ),
-              _buildFabButton(),
+           
             ],
           ),
         ),
@@ -620,12 +655,9 @@ Widget _buildPostsList(List<PostModel> posts, String fontFamily, Color primaryCo
             elevation: 0,
             child: InkWell(
               onTap: () async {
-                final currentUser = FirebaseAuth.instance.currentUser;
-
-                // Only increment if viewer is not the post creator
-                if (currentUser != null && currentUser.uid != post.userId) {
-                  await PostService().incrementViewCount(post.id);
-                }
+                // Increment view count and navigate - no need to check if viewer is post creator
+                // since we've already filtered those out
+                await PostService().incrementViewCount(post.id);
 
                 // Navigate and wait for return
                 await Navigator.push(
@@ -700,7 +732,7 @@ Widget _buildPostsList(List<PostModel> posts, String fontFamily, Color primaryCo
                                   ),
                                 
                                 // User info row
-                                _buildUserInfoRow(post, helpCount, thankCount, fontFamily, primaryColor),
+                                buildUserInfoRow(post, helpCount, thankCount, fontFamily, primaryColor),
                                 
                                 const SizedBox(height: 12),
                                 
@@ -826,99 +858,133 @@ Widget _buildPostImage(PostModel post, String fontFamily, Color primaryColor) {
 }
 
 // Extract the user info row to a separate method
-Widget _buildUserInfoRow(PostModel post, int helpCount, int thankCount, String fontFamily, Color primaryColor) {
-  return Row(
-    crossAxisAlignment: CrossAxisAlignment.center,
-    children: [
-      // User avatar
-      Container(
-        padding: const EdgeInsets.all(2),
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: primaryColor.withOpacity(0.2),
-            width: 1.5,
-          ),
-        ),
-        child: CircleAvatar(
-          radius: 16,
-          backgroundColor: primaryColor.withOpacity(0.1),
-          backgroundImage: post.userImage.isNotEmpty
-            ? NetworkImage(post.userImage)
-            : null,
-          child: post.userImage.isEmpty
-            ? Text(
-                post.userName.isNotEmpty 
-                  ? post.userName[0].toUpperCase()
-                  : '?',
-                style: TextStyle(
-                  fontFamily: fontFamily,
-                  color: primaryColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              )
-            : null,
-        ),
-      ),
-      const SizedBox(width: 10),
-      
-      // Username and location
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              post.userName,
-              style: TextStyle(
-                fontFamily: fontFamily,
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-                color: Colors.black.withOpacity(0.8),
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+ Widget buildUserInfoRow(PostModel post, int helpCount, int thankCount, String fontFamily, Color primaryColor) {
+    // Get the verification status from the cache
+    final isVerified = _userVerificationStatus[post.userId] ?? false;
+    
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        // User avatar
+        Container(
+          padding: const EdgeInsets.all(2),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: primaryColor.withOpacity(0.2),
+              width: 1.5,
             ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.location_on_rounded,
-                  size: 12,
-                  color: Colors.grey[600],
-                ),
-                const SizedBox(width: 2),
-                Flexible(
-                  child: Text(
-                    post.region,
+          ),
+          child: CircleAvatar(
+            radius: 16,
+            backgroundColor: primaryColor.withOpacity(0.1),
+            backgroundImage: post.userImage.isNotEmpty ? NetworkImage(post.userImage) : null,
+            child: post.userImage.isEmpty
+                ? Text(
+                    post.userName.isNotEmpty ? post.userName[0].toUpperCase() : '?',
                     style: TextStyle(
                       fontFamily: fontFamily,
-                      fontSize: 11,
-                      color: Colors.grey[600],
+                      color: primaryColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  )
+                : null,
+          ),
+        ),
+        const SizedBox(width: 10),
+        // Username and location
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: Text(
+                      post.userName,
+                      style: TextStyle(
+                        fontFamily: fontFamily,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: Colors.black.withOpacity(0.8),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                ),
-              ],
-            ),
+                  // Use the cached verification status instead of FutureBuilder
+                  if (isVerified)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4.0),
+                      child: Icon(
+                        Icons.verified_rounded,
+                        size: 14,
+                        color: Colors.blue[600],
+                      ),
+                    )
+                  else
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4.0),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          'Not Verified',
+                          style: TextStyle(
+                            fontFamily: fontFamily,
+                            fontSize: 10,
+                            color: Colors.grey[700],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.location_on_rounded,
+                    size: 12,
+                    color: Colors.grey[600],
+                  ),
+                  const SizedBox(width: 2),
+                  Flexible(
+                    child: Text(
+                      post.region,
+                      style: TextStyle(
+                        fontFamily: fontFamily,
+                        fontSize: 11,
+                        color: Colors.grey[600],
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        // User stats
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildStatBadge(Icons.handshake_outlined, helpCount, fontFamily),
+            const SizedBox(width: 4),
+            _buildStatBadge(Icons.favorite_border_rounded, thankCount, fontFamily),
           ],
         ),
-      ),
-      
-      // User stats
-      Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildStatBadge(Icons.handshake_outlined, helpCount, fontFamily),
-          const SizedBox(width: 4),
-          _buildStatBadge(Icons.favorite_border_rounded, thankCount, fontFamily),
-        ],
-      ),
-    ],
-  );
-}
+      ],
+    );
+  }
 
 // Extract the footer row to a separate method
 Widget _buildFooterRow(PostModel post, String fontFamily, Color primaryColor) {
@@ -1095,62 +1161,7 @@ Widget _buildCategoryBadge(String category, String fontFamily, Color primaryColo
     return months[month - 1];
   }
 
-  Widget _buildFabButton() {
-    return Positioned(
-      right: 20,
-      bottom: 20,
-      child: TweenAnimationBuilder<double>(
-        tween: Tween<double>(begin: 0.8, end: 1.0),
-        duration: const Duration(seconds: 1),
-        curve: Curves.elasticOut,
-        builder: (context, value, child) {
-          return Transform.scale(
-            scale: value,
-            child: Container(
-              height: 58,
-              width: 58,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    MadadgarTheme.primaryColor,
-                    Color.lerp(MadadgarTheme.primaryColor, Colors.black, 0.15)!,
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(18),
-                boxShadow: [
-                  BoxShadow(
-                    color: MadadgarTheme.primaryColor.withOpacity(0.4),
-                    blurRadius: 12,
-                    offset: const Offset(0, 6),
-                    spreadRadius: 0,
-                  ),
-                ],
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () {
-                    Navigator.pushNamed(context, '/create-post');
-                  },
-                  borderRadius: BorderRadius.circular(18),
-                  splashColor: Colors.white.withOpacity(0.2),
-                  child: const Center(
-                    child: Icon(
-                      Icons.add_rounded,
-                      color: Colors.white,
-                      size: 28,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
+ 
 
   @override
   bool get wantKeepAlive => true;
