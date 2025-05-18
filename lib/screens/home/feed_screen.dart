@@ -13,6 +13,7 @@ import 'package:madadgar/models/user.dart';
 import 'package:madadgar/services/user_service.dart';
 import 'package:madadgar/widgets/report_dialog.dart';
 import 'package:madadgar/services/report_service.dart';
+import 'package:madadgar/widgets/user_search.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -30,6 +31,7 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
   late AnimationController _animationController;
   late Animation<double> _filterAnimation;
    final ReportService _reportService = ReportService();
+   bool _isSearchActive = false;
   
   // Animation for list items
   final List<AnimationController> _itemAnimationControllers = [];
@@ -161,90 +163,96 @@ void initState() {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
-    final primaryColor = MadadgarTheme.primaryColor;
-    final fontFamily = MadadgarTheme.fontFamily;
-    
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-      ),
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF8F9FA),
-        body: SafeArea(
-          child: Stack(
-            children: [
-              Column(
-                children: [
-                  _buildHeader(fontFamily),
+ @override
+Widget build(BuildContext context) {
+  super.build(context);
+  final primaryColor = MadadgarTheme.primaryColor;
+  final fontFamily = MadadgarTheme.fontFamily;
+  
+  return AnnotatedRegion<SystemUiOverlayStyle>(
+    value: const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+    ),
+    child: Scaffold(
+      backgroundColor: const Color(0xFFF8F9FA),
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Column(
+              children: [
+                _buildHeader(fontFamily),
+                // Only show filters when not in search mode
+                if (!_isSearchActive)
                   SizeTransition(
                     sizeFactor: _filterAnimation,
                     child: _buildExpandedFilters(fontFamily),
                   ),
-                  Expanded(
-                    child: RefreshIndicator(
-                      color: primaryColor,
-                      backgroundColor: Colors.white,
-                      strokeWidth: 2.5,
-                      onRefresh: () async {
-                        _loadPosts();
-                      },
-                      child: FutureBuilder<List<PostModel>>(
-                        future: _postsFuture,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            return _buildLoadingState(primaryColor);
-                          }
-                          
-                          if (snapshot.hasError) {
-                            return _buildErrorState(fontFamily, primaryColor);
-                          }
-                          
-                          final posts = snapshot.data ?? [];
-                          
-                          if (posts.isEmpty) {
-                            return _buildEmptyState(fontFamily, primaryColor);
-                          }
-                          
-                          // Initialize animations when posts are loaded
-                          _initItemAnimations(posts.length);
-                          
-                          return _buildPostsList(posts, fontFamily, primaryColor);
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-           
-            ],
-          ),
+                Expanded(
+                  child: _isSearchActive 
+                      ? const UserSearchWidget() // Show search widget when search is active
+                      : RefreshIndicator(
+                          color: primaryColor,
+                          backgroundColor: Colors.white,
+                          strokeWidth: 2.5,
+                          onRefresh: () async {
+                            _loadPosts();
+                          },
+                          child: FutureBuilder<List<PostModel>>(
+                            future: _postsFuture,
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return _buildLoadingState(primaryColor);
+                              }
+                              
+                              if (snapshot.hasError) {
+                                return _buildErrorState(fontFamily, primaryColor);
+                              }
+                              
+                              final posts = snapshot.data ?? [];
+                              
+                              if (posts.isEmpty) {
+                                return _buildEmptyState(fontFamily, primaryColor);
+                              }
+                              
+                              // Initialize animations when posts are loaded
+                              _initItemAnimations(posts.length);
+                              
+                              return _buildPostsList(posts, fontFamily, primaryColor);
+                            },
+                          ),
+                        ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
-  Widget _buildHeader(String fontFamily) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            offset: const Offset(0, 2),
-            blurRadius: 10,
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
+ // Modify the _buildHeader method to include the search toggle button
+Widget _buildHeader(String fontFamily) {
+  return Container(
+    padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.03),
+          offset: const Offset(0, 2),
+          blurRadius: 10,
+        ),
+      ],
+    ),
+    child: Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Only show type filters if not in search mode
+            if (!_isSearchActive)
               Row(
                 children: [
                   _buildTypeFilter(null, 'All', fontFamily),
@@ -253,42 +261,89 @@ void initState() {
                   const SizedBox(width: 8),
                   _buildTypeFilter(PostType.offer, 'Offers', fontFamily),
                 ],
-              ),
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _isFilterExpanded = !_isFilterExpanded;
-                    if (_isFilterExpanded) {
-                      _animationController.forward();
-                    } else {
-                      _animationController.reverse();
-                    }
-                  });
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: _isFilterExpanded ? MadadgarTheme.primaryColor.withOpacity(0.1) : Colors.grey[100],
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: _isFilterExpanded ? MadadgarTheme.primaryColor.withOpacity(0.2) : Colors.grey[200]!,
-                      width: 1,
-                    ),
-                  ),
-                  child: Icon(
-                    _isFilterExpanded ? Icons.filter_list : Icons.filter_alt_outlined,
-                    size: 20,
-                    color: _isFilterExpanded ? MadadgarTheme.primaryColor : Colors.grey[700],
-                  ),
+              )
+            else
+              Text(
+                'User Search',
+                style: TextStyle(
+                  fontFamily: fontFamily,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black.withOpacity(0.8),
                 ),
               ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
+            Row(
+              children: [
+                // Search toggle button
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isSearchActive = !_isSearchActive;
+                      // If closing search, ensure filters are closed too
+                      if (!_isSearchActive && _isFilterExpanded) {
+                        _isFilterExpanded = false;
+                        _animationController.reverse();
+                      }
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: _isSearchActive ? MadadgarTheme.primaryColor.withOpacity(0.1) : Colors.grey[100],
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: _isSearchActive ? MadadgarTheme.primaryColor.withOpacity(0.2) : Colors.grey[200]!,
+                        width: 1,
+                      ),
+                    ),
+                    child: Icon(
+                      _isSearchActive ? Icons.close : Icons.search,
+                      size: 20,
+                      color: _isSearchActive ? MadadgarTheme.primaryColor : Colors.grey[700],
+                    ),
+                  ),
+                ),
+                // Only show filter button when not in search mode
+                if (!_isSearchActive)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _isFilterExpanded = !_isFilterExpanded;
+                          if (_isFilterExpanded) {
+                            _animationController.forward();
+                          } else {
+                            _animationController.reverse();
+                          }
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: _isFilterExpanded ? MadadgarTheme.primaryColor.withOpacity(0.1) : Colors.grey[100],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: _isFilterExpanded ? MadadgarTheme.primaryColor.withOpacity(0.2) : Colors.grey[200]!,
+                            width: 1,
+                          ),
+                        ),
+                        child: Icon(
+                          _isFilterExpanded ? Icons.filter_list : Icons.filter_alt_outlined,
+                          size: 20,
+                          color: _isFilterExpanded ? MadadgarTheme.primaryColor : Colors.grey[700],
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
   Widget _buildTypeFilter(PostType? type, String label, String fontFamily) {
     final isSelected = _selectedType == type;
     
@@ -559,28 +614,7 @@ void initState() {
             ),
           ),
           const SizedBox(height: 24),
-          TextButton.icon(
-            onPressed: () {
-              Navigator.pushNamed(context, '/create-post');
-            },
-            icon: Icon(Icons.add_circle_outline_rounded, color: primaryColor),
-            label: Text(
-              'Create Post',
-              style: TextStyle(
-                fontFamily: fontFamily,
-                color: primaryColor,
-                fontWeight: FontWeight.w600,
-                fontSize: 15,
-              ),
-            ),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              backgroundColor: primaryColor.withOpacity(0.1),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          ),
+        
         ],
       ),
     );

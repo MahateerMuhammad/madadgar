@@ -186,67 +186,68 @@ class _NearbyScreenState extends State<NearbyScreen>
   }
 
   // Modified method to prefetch user data
-  Future<void> _loadNearbyPosts() async {
-    try {
-      setState(() {
-        _isLoading = true;
-        _hasError = false;
-      });
+ Future<void> _loadNearbyPosts() async {
+  try {
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
 
-      final authService = Provider.of<AuthService>(context, listen: false);
-      final postService = Provider.of<PostService>(context, listen: false);
-      final currentUser = FirebaseAuth.instance.currentUser;
-      final String currentUserId = currentUser?.uid ?? '';
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final postService = Provider.of<PostService>(context, listen: false);
+    final currentUser = FirebaseAuth.instance.currentUser;
+    final String currentUserId = currentUser?.uid ?? '';
 
-      final user = authService.currentUser;
-      if (user == null || user.region.isEmpty) {
-        throw Exception('User region not found.');
-      }
-
-      // Get posts by region
-      final posts = await postService.getPostsByRegion(
-        region: user.region,
-      );
-      
-      // Filter out posts created by the current user
-      final filteredPosts = posts.where((post) => post.userId != currentUserId).toList();
-      
-      // Clear previous user data cache
-      _userVerificationMap.clear();
-      _userDataMap.clear();
-      
-      // Prefetch user data for all posts
-      for (var post in filteredPosts) {
-        if (!_userVerificationMap.containsKey(post.userId)) {
-          try {
-            final userData = await UserService().getUserById(post.userId);
-            _userVerificationMap[post.userId] = userData.isVerified;
-            _userDataMap[post.userId] = userData;
-          } catch (e) {
-            print('Error fetching user data for ${post.userId}: $e');
-            _userVerificationMap[post.userId] = false;
-          }
-        }
-      }
-
-      setState(() {
-        _nearbyPosts = filteredPosts;
-        _isLoading = false;
-
-        // Initialize animations when posts are loaded
-        if (filteredPosts.isNotEmpty) {
-          _initItemAnimations(filteredPosts.length);
-        }
-      });
-    } catch (e) {
-      print("Error loading nearby posts: $e");
-      setState(() {
-        _isLoading = false;
-        _hasError = true;
-        _errorMessage = 'Unable to load nearby posts. Please try again.';
-      });
+    final user = authService.currentUser;
+    if (user == null || user.region.isEmpty) {
+      throw Exception('User region not found.');
     }
+
+    // Get posts by region AND only with active status
+    final posts = await postService.getPostsByRegion(
+      region: user.region,
+      status: PostStatus.active, // Only show active posts
+    );
+    
+    // Filter out posts created by the current user
+    final filteredPosts = posts.where((post) => post.userId != currentUserId).toList();
+    
+    // Clear previous user data cache
+    _userVerificationMap.clear();
+    _userDataMap.clear();
+    
+    // Prefetch user data for all posts
+    for (var post in filteredPosts) {
+      if (!_userVerificationMap.containsKey(post.userId)) {
+        try {
+          final userData = await UserService().getUserById(post.userId);
+          _userVerificationMap[post.userId] = userData.isVerified;
+          _userDataMap[post.userId] = userData;
+        } catch (e) {
+          print('Error fetching user data for ${post.userId}: $e');
+          _userVerificationMap[post.userId] = false;
+        }
+      }
+    }
+
+    setState(() {
+      _nearbyPosts = filteredPosts;
+      _isLoading = false;
+
+      // Initialize animations when posts are loaded
+      if (filteredPosts.isNotEmpty) {
+        _initItemAnimations(filteredPosts.length);
+      }
+    });
+  } catch (e) {
+    print("Error loading nearby posts: $e");
+    setState(() {
+      _isLoading = false;
+      _hasError = true;
+      _errorMessage = 'Unable to load nearby posts. Please try again.';
+    });
   }
+}
 
   String _formatPostDate(DateTime dateTime) {
     final now = DateTime.now();
@@ -605,18 +606,38 @@ class _NearbyScreenState extends State<NearbyScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Align(
-                                alignment: Alignment.topRight,
-                                child: Text(
-                                  _formatPostDate(post.createdAt),
-                                  style: TextStyle(
-                                    fontFamily: fontFamily,
-                                    fontSize: 12,
-                                    color: Colors.grey[500],
+                             Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    _formatPostDate(post.createdAt),
+                                    style: TextStyle(
+                                      fontFamily: fontFamily,
+                                      fontSize: 12,
+                                      color: Colors.grey[500],
+                                    ),
                                   ),
-                                ),
+                                  const SizedBox(width: 8),
+                                  // Three-dot menu button
+                                  InkWell(
+                                    onTap: () => _showPostOptions(post),
+                                    borderRadius: BorderRadius.circular(20),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[100],
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Icon(
+                                        Icons.more_vert_rounded,
+                                        size: 16,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              
+
                               // User info row - with cached verification status
                               _buildUserInfoRow(post, helpCount, thankCount, fontFamily, primaryColor, isUserVerified),
                               
@@ -806,22 +827,7 @@ class _NearbyScreenState extends State<NearbyScreen>
           
           // ADD THIS: Options button for post menu
           const SizedBox(width: 8),
-          InkWell(
-            onTap: () => _showPostOptions(post),
-            borderRadius: BorderRadius.circular(20),
-            child: Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Icon(
-                Icons.more_vert_rounded,
-                size: 16,
-                color: Colors.grey[600],
-              ),
-            ),
-          ),
+        
         ],
       ),
     ],
