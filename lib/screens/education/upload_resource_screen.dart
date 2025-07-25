@@ -1,8 +1,9 @@
-// ignore_for_file: deprecated_member_use
+//ignore_for_file: prefer_const_constructors, avoid_print, use_build_context_synchronously,deprecated_member_use, prefer_const_literals_to_create_immutables, unnecessary_null_comparison, avoid_unnecessary_containers, prefer_interpolation_to_compose_strings, unused_local_variable, prefer_final_fields, prefer_typing_uninitialized_variables, avoid_print, unnecessary_new, prefer_const_constructors_in_immutables
+
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:***REMOVED***/models/education.dart';
+//import 'package:***REMOVED***/models/education.dart';
 import 'package:***REMOVED***/services/edu_service.dart';
 import 'package:***REMOVED***/config/theme.dart';
 import 'package:path/path.dart' as path;
@@ -16,32 +17,33 @@ class UploadResourceScreen extends StatefulWidget {
 
 class _UploadResourceScreenState extends State<UploadResourceScreen> {
   final _formKey = GlobalKey<FormState>();
-  final EducationalResourceService _resourceService = EducationalResourceService();
-  
+  final EducationalResourceService _resourceService =
+      EducationalResourceService();
+
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  
+
   String _selectedCategory = '';
   String _selectedSubCategory = '';
   List<String> _selectedTags = [];
-  
+
   File? _selectedFile;
   String _fileName = '';
   bool _isUploading = false;
-  
+
   List<String> _categories = [];
   List<String> _subCategories = [];
   List<String> _availableTags = [];
-  
+
   double _uploadProgress = 0.0;
-  
+
   @override
   void initState() {
     super.initState();
     _loadCategories();
     _loadTags();
   }
-  
+
   Future<void> _loadCategories() async {
     try {
       final categories = await _resourceService.getAvailableCategories();
@@ -65,10 +67,11 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
       );
     }
   }
-  
+
   Future<void> _loadSubCategories(String category) async {
     try {
-      final subCategories = await _resourceService.getAvailableSubCategories(category);
+      final subCategories =
+          await _resourceService.getAvailableSubCategories(category);
       setState(() {
         _subCategories = subCategories;
         _selectedSubCategory = '';
@@ -86,7 +89,7 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
       );
     }
   }
-  
+
   Future<void> _loadTags() async {
     try {
       final tags = await _resourceService.getAllTags();
@@ -106,14 +109,14 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
       );
     }
   }
-  
+
   Future<void> _pickFile() async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.any,
         allowMultiple: false,
       );
-      
+
       if (result != null && result.files.isNotEmpty) {
         final file = File(result.files.first.path!);
         setState(() {
@@ -134,12 +137,12 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
       );
     }
   }
-  
+
   Future<void> _uploadResource() async {
     if (_formKey.currentState?.validate() != true) {
       return;
     }
-    
+
     if (_selectedFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -153,30 +156,31 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
       );
       return;
     }
-    
+
     setState(() {
       _isUploading = true;
       _uploadProgress = 0.0;
     });
-    
+
     try {
       // First simulate progress updates (for better UX since our service doesn't provide real-time progress)
       _simulateProgressUpdates();
-      
+
       final resource = await _resourceService.createResource(
         title: _titleController.text,
         description: _descriptionController.text,
         file: _selectedFile!,
         category: _selectedCategory,
-        subCategory: _selectedSubCategory.isNotEmpty ? _selectedSubCategory : null,
+        subCategory:
+            _selectedSubCategory.isNotEmpty ? _selectedSubCategory : null,
         tags: _selectedTags.isNotEmpty ? _selectedTags : null,
       );
-      
+
       setState(() {
         _isUploading = false;
         _uploadProgress = 1.0;
       });
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Resource uploaded successfully'),
@@ -187,14 +191,14 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
           backgroundColor: Colors.green.shade700,
         ),
       );
-      
+
       // Return to previous screen
       Navigator.pop(context, true);
     } catch (e) {
       setState(() {
         _isUploading = false;
       });
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to upload resource: $e'),
@@ -207,7 +211,7 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
       );
     }
   }
-  
+
   void _simulateProgressUpdates() {
     // Simulate progress updates at regular intervals
     const totalSteps = 10;
@@ -232,20 +236,21 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         title: const Text(
           'Upload Resource',
           style: TextStyle(
-            color: MadadgarTheme.primaryColor,
-            fontWeight: FontWeight.w600),
+              color: MadadgarTheme.primaryColor, fontWeight: FontWeight.w600),
         ),
         centerTitle: true,
         leading: IconButton(
-         
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20,color: MadadgarTheme.primaryColor,),
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            size: 20,
+            color: MadadgarTheme.primaryColor,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -266,7 +271,7 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
             ),
     );
   }
-  
+
   Widget _buildUploadingView() {
     return Container(
       decoration: const BoxDecoration(
@@ -292,7 +297,8 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
                 minHeight: 8,
                 borderRadius: BorderRadius.circular(4),
                 backgroundColor: Colors.grey.shade200,
-                valueColor: AlwaysStoppedAnimation<Color>(MadadgarTheme.primaryColor),
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(MadadgarTheme.primaryColor),
               ),
             ),
             const SizedBox(height: 16),
@@ -319,7 +325,7 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
       ),
     );
   }
-  
+
   Widget _buildUploadForm() {
     return Form(
       key: _formKey,
@@ -336,45 +342,42 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
             maxLines: 1,
           ),
           const SizedBox(height: 20),
-          
+
           // Description Field
           _buildTextField(
             labelText: 'Description',
             hintText: 'Describe your educational resource in detail',
             prefixIcon: Icons.description,
             controller: _descriptionController,
-            validator: (value) => value == null || value.isEmpty
-                ? 'Enter a description'
-                : null,
+            validator: (value) =>
+                value == null || value.isEmpty ? 'Enter a description' : null,
             maxLines: 5,
           ),
           const SizedBox(height: 20),
-          
+
           // Category Dropdown
           _buildCategoryDropdown(),
           const SizedBox(height: 20),
-          
+
           // SubCategory Dropdown (if available)
-          if (_subCategories.isNotEmpty)
-            _buildSubCategoryDropdown(),
-          if (_subCategories.isNotEmpty)
-            const SizedBox(height: 20),
-          
+          if (_subCategories.isNotEmpty) _buildSubCategoryDropdown(),
+          if (_subCategories.isNotEmpty) const SizedBox(height: 20),
+
           // Tags Input
           _buildTagsInput(),
           const SizedBox(height: 20),
-          
+
           // File Selection
           _buildFileSelector(),
           const SizedBox(height: 30),
-          
+
           // Upload Button
           _buildUploadButton(),
         ],
       ),
     );
   }
-  
+
   Widget _buildTextField({
     required String labelText,
     required String hintText,
@@ -418,7 +421,7 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
       ],
     );
   }
-  
+
   Widget _buildCategoryDropdown() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -440,12 +443,12 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
           child: DropdownButtonFormField<String>(
             value: _selectedCategory.isNotEmpty ? _selectedCategory : null,
             icon: Icon(
-              Icons.keyboard_arrow_down, 
+              Icons.keyboard_arrow_down,
               color: Colors.grey.shade700,
             ),
             decoration: InputDecoration(
               prefixIcon: Icon(
-                Icons.category, 
+                Icons.category,
                 color: Colors.grey.shade500,
                 size: 22,
               ),
@@ -495,7 +498,7 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
       ],
     );
   }
-  
+
   Widget _buildSubCategoryDropdown() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -515,14 +518,15 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
             borderRadius: BorderRadius.circular(12),
           ),
           child: DropdownButtonFormField<String>(
-            value: _selectedSubCategory.isNotEmpty ? _selectedSubCategory : null,
+            value:
+                _selectedSubCategory.isNotEmpty ? _selectedSubCategory : null,
             icon: Icon(
-              Icons.keyboard_arrow_down, 
+              Icons.keyboard_arrow_down,
               color: Colors.grey.shade700,
             ),
             decoration: InputDecoration(
               prefixIcon: Icon(
-                Icons.subdirectory_arrow_right, 
+                Icons.subdirectory_arrow_right,
                 color: Colors.grey.shade500,
                 size: 22,
               ),
@@ -569,7 +573,7 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
       ],
     );
   }
-  
+
   Widget _buildTagsInput() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -635,10 +639,9 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
                     );
                   }).toList(),
                 ),
-              
-              if (_selectedTags.isNotEmpty)
-                const SizedBox(height: 12),
-              
+
+              if (_selectedTags.isNotEmpty) const SizedBox(height: 12),
+
               // Text field for new tags
               Row(
                 children: [
@@ -653,15 +656,15 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
                       decoration: InputDecoration(
                         hintText: '   Add a tag...',
                         hintStyle: TextStyle(color: Colors.grey.shade400),
-                          border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-             
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
                         contentPadding: EdgeInsets.zero,
                       ),
                       onSubmitted: (value) {
-                        if (value.isNotEmpty && !_selectedTags.contains(value)) {
+                        if (value.isNotEmpty &&
+                            !_selectedTags.contains(value)) {
                           setState(() {
                             _selectedTags.add(value.trim());
                           });
@@ -671,7 +674,7 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
                   ),
                 ],
               ),
-              
+
               // Show suggestions
               if (_availableTags.isNotEmpty)
                 Padding(
@@ -730,7 +733,7 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
       ],
     );
   }
-  
+
   Widget _buildFileSelector() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -764,10 +767,16 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _fileName.isNotEmpty ? _fileName : 'Tap to select a file',
+                        _fileName.isNotEmpty
+                            ? _fileName
+                            : 'Tap to select a file',
                         style: TextStyle(
-                          color: _fileName.isNotEmpty ? Colors.grey.shade800 : Colors.grey.shade500,
-                          fontWeight: _fileName.isNotEmpty ? FontWeight.w500 : FontWeight.normal,
+                          color: _fileName.isNotEmpty
+                              ? Colors.grey.shade800
+                              : Colors.grey.shade500,
+                          fontWeight: _fileName.isNotEmpty
+                              ? FontWeight.w500
+                              : FontWeight.normal,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -777,7 +786,8 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
                           padding: const EdgeInsets.only(top: 4),
                           child: Text(
                             'Size: ${(_selectedFile!.lengthSync() / 1024 / 1024).toStringAsFixed(2)} MB',
-                            style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                            style: TextStyle(
+                                color: Colors.grey.shade600, fontSize: 12),
                           ),
                         ),
                     ],
@@ -794,7 +804,7 @@ class _UploadResourceScreenState extends State<UploadResourceScreen> {
       ],
     );
   }
-  
+
   Widget _buildUploadButton() {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(

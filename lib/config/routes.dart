@@ -6,7 +6,7 @@ import 'package:***REMOVED***/screens/auth/register_screen.dart';
 import 'package:***REMOVED***/screens/auth/forgot_screen_password.dart';
 import 'package:***REMOVED***/screens/home/home_screen.dart';
 import 'package:***REMOVED***/screens/post/create_post_screen.dart';
- import 'package:***REMOVED***/screens/post/post_detail_screen.dart';
+ //import 'package:***REMOVED***/screens/post/post_detail_screen.dart';
 // import 'package:***REMOVED***/screens/post/my_posts_screen.dart';
 import 'package:***REMOVED***/screens/profile/profile_screen.dart';
 

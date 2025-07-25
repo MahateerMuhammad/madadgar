@@ -8,10 +8,10 @@ class MadadgarTheme {
   static const Color backgroundColor = Color(0xFFF1F8F6); // Light Mint
   static const Color accentColor = Color(0xFF607D8B); // Cool Slate
   static const Color errorColor = Color(0xFFE57373); // Coral Red
-  
+
   // Font Family
   static final String fontFamily = GoogleFonts.poppins().fontFamily!;
-  
+
   // Text Styles
   static final TextStyle headingStyle = TextStyle(
     fontFamily: fontFamily,
@@ -19,20 +19,20 @@ class MadadgarTheme {
     fontSize: 24,
     color: Colors.black87,
   );
-  
+
   static final TextStyle subheadingStyle = TextStyle(
     fontFamily: fontFamily,
     fontWeight: FontWeight.w600,
     fontSize: 18,
     color: Colors.black87,
   );
-  
+
   static final TextStyle bodyStyle = TextStyle(
     fontFamily: fontFamily,
     fontSize: 16,
     color: Colors.black87,
   );
-  
+
   // Light Theme
   static final ThemeData lightTheme = ThemeData(
     primaryColor: primaryColor,
@@ -93,7 +93,7 @@ class MadadgarTheme {
         color: Colors.grey.shade500,
       ),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: Colors.white,
       elevation: 3,
       shape: RoundedRectangleBorder(
@@ -102,7 +102,7 @@ class MadadgarTheme {
       shadowColor: primaryColor.withOpacity(0.1),
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
     ),
-    tabBarTheme: TabBarTheme(
+    tabBarTheme: TabBarThemeData(
       labelColor: primaryColor,
       unselectedLabelColor: Colors.grey,
       labelStyle: TextStyle(
