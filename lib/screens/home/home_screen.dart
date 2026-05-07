@@ -14,9 +14,6 @@ import 'package:***REMOVED***/screens/chat/conversation_list.dart';
 import 'package:***REMOVED***/screens/home/about.dart';
 import 'package:***REMOVED***/screens/profile/settings_screen.dart';
 import 'package:***REMOVED***/screens/post/my_posts_screen.dart';
-import 'package:***REMOVED***/screens/education/education_resource_screen.dart';
-import 'package:***REMOVED***/screens/education/upload_resource_screen.dart';
-import 'package:***REMOVED***/screens/education/my_edu_resources.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -31,20 +28,20 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Widget> _screens = [
     FeedScreen(),
     NearbyScreen(),
-    EducationalResourcesScreen (),
+
     ProfileScreen(),
   ];
 
   final List<String> _titles = [
     'Feed',
     'Nearby',
-    'Resources',
+
     'Profile',
   ];
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = MadadgarTheme.primaryColor;
+    const primaryColor = MadadgarTheme.primaryColor;
     final fontFamily = MadadgarTheme.fontFamily;
     final accentColor =
         HSLColor.fromColor(primaryColor).withLightness(0.85).toColor();
@@ -147,10 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Icon(Icons.location_on_outlined),
               activeIcon: Icon(Icons.location_on),
               label: 'Nearby'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.cast_for_education_outlined),
-              activeIcon: Icon(Icons.cast_for_education),
-              label: 'Education'),
+
           BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),
               activeIcon: Icon(Icons.person),
@@ -193,11 +187,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         radius: 36,
                         backgroundColor: Colors.white,
                         backgroundImage: user?.profileImage != null &&
-                                user!.profileImage!.isNotEmpty
-                            ? NetworkImage(user.profileImage!)
+                                user!.profileImage.isNotEmpty
+                            ? NetworkImage(user.profileImage)
                             : null,
                         child: (user?.profileImage == null ||
-                                user!.profileImage!.isEmpty)
+                                user!.profileImage.isEmpty)
                             ? Icon(
                                 Icons.person,
                                 size: 36,
@@ -300,44 +294,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       },
                     ),
 
-                       _buildDrawerItem(
-                      icon: Icons.cast_for_education,
-                      title: 'Educational Resources',
-                      primaryColor: primaryColor,
-                      fontFamily: fontFamily,
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const EducationalResourcesScreen()),
-                        );
-                      },
-                      ),
-
-                      _buildDrawerItem(
-                      icon: Icons.add_circle,
-                      title: 'Create Educational Resource',
-                      primaryColor: primaryColor,
-                      fontFamily: fontFamily,
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const UploadResourceScreen()),
-                        );
-                      },
-                    ),
-
-                     _buildDrawerItem(
-                      icon: Icons.article,
-                      title: 'My Educational Resource',
-                      primaryColor: primaryColor,
-                      fontFamily: fontFamily,
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const MyResourcesScreen()),
-                        );
-                      },
-                    ),
 
                     Divider(
                         color: Colors.grey.withOpacity(0.3),
@@ -484,7 +440,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showSearchDialog() {
-    final primaryColor = MadadgarTheme.primaryColor;
+    const primaryColor = MadadgarTheme.primaryColor;
     final fontFamily = MadadgarTheme.fontFamily;
 
     showDialog(
@@ -564,7 +520,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showAboutDialog() {
-    final primaryColor = MadadgarTheme.primaryColor;
+    const primaryColor = MadadgarTheme.primaryColor;
     final fontFamily = MadadgarTheme.fontFamily;
 
     showDialog(

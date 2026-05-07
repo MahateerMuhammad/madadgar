@@ -12,7 +12,7 @@ import 'package:***REMOVED***/widgets/post_detail_chat.dart'; // Import PostDeta
 class PostDetailScreen extends StatefulWidget {
   final PostModel post;
 
-  const PostDetailScreen({Key? key, required this.post}) : super(key: key);
+  const PostDetailScreen({super.key, required this.post});
 
   @override
   State<PostDetailScreen> createState() => _PostDetailScreenState();
@@ -64,7 +64,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final post = widget.post;
-    final primaryColor = MadadgarTheme.primaryColor;
+    const primaryColor = MadadgarTheme.primaryColor;
     final theme = Theme.of(context);
     final secondaryColor = primaryColor.withOpacity(0.1);
     final accentColor = HSLColor.fromColor(primaryColor).withLightness(0.85).toColor();

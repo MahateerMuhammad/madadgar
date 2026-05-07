@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs access to camera to scan your CNIC and verify your identity.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app needs access to microphone to record videos for liveness verification.</string>
 </dict>
 </plist>

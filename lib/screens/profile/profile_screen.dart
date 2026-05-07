@@ -12,6 +12,7 @@ import 'package:***REMOVED***/config/theme.dart';
 import 'package:***REMOVED***/screens/post/my_posts_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:***REMOVED***/services/auth_service.dart';
 import 'package:***REMOVED***/services/post_service.dart';
 import 'package:***REMOVED***/screens/profile/settings_screen.dart';
@@ -141,9 +142,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final String? currentProfileImageUrl = _userModel?.profileImage;
 
       // Prepare Cloudinary upload URL
-      final String cloudName = "***REMOVED***"; 
-      final String presetName = "***REMOVED***"; 
-      final String uploadUrl = "https://api.cloudinary.com/v1_1/***REMOVED***/image/upload";
+      final String cloudName = dotenv.env['CLOUDINARY_CLOUD_NAME'] ?? '';
+      final String presetName = dotenv.env['CLOUDINARY_UPLOAD_PRESET'] ?? '';
+      final String uploadUrl = "https://api.cloudinary.com/v1_1/$cloudName/image/upload";
 
       final request = http.MultipartRequest('POST', Uri.parse(uploadUrl));
       request.fields['upload_preset'] = presetName;
@@ -256,7 +257,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = MadadgarTheme.primaryColor;
+    const primaryColor = MadadgarTheme.primaryColor;
     final fontFamily = MadadgarTheme.fontFamily;
     final screenWidth = MediaQuery.of(context).size.width;
 

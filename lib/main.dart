@@ -9,18 +9,19 @@ import 'package:***REMOVED***/screens/home/home_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:***REMOVED***/services/auth_service.dart';
 import 'package:***REMOVED***/services/post_service.dart';
-import 'package:***REMOVED***/services/edu_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:***REMOVED***/firebase_options.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -32,8 +33,6 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider<AuthService>(create: (_) => AuthService()),
         Provider<PostService>(create: (_) => PostService()),
-         Provider<EducationalResourceService>(
-          create: (_) => EducationalResourceService())
       ],
       child: MaterialApp(
         title: 'Madadgar',
@@ -43,7 +42,7 @@ class MyApp extends StatelessWidget {
         routes: {
           AppRoutes.login: (context) => const LoginScreen(),
           AppRoutes.register: (context) => const RegisterScreen(),
-          AppRoutes.home: (context) => HomeScreen(),
+          AppRoutes.home: (context) => const HomeScreen(),
         },
       ),
     );

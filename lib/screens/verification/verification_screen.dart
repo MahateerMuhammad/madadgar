@@ -10,7 +10,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:***REMOVED***/services/auth_service.dart';
 
 class VerificationScreen extends StatefulWidget {
-  const VerificationScreen({Key? key}) : super(key: key);
+  const VerificationScreen({super.key});
 
   @override
   _VerificationScreenState createState() => _VerificationScreenState();
@@ -124,7 +124,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
   
   @override
   Widget build(BuildContext context) {
-    final primaryColor = MadadgarTheme.primaryColor;
+    const primaryColor = MadadgarTheme.primaryColor;
     
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -170,7 +170,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
   }
   
   Widget _buildVerificationStatus() {
-    final primaryColor = MadadgarTheme.primaryColor;
+    const primaryColor = MadadgarTheme.primaryColor;
     final fontFamily = MadadgarTheme.fontFamily;
     final status = _verificationStatus!['status'];
     final String statusText;
@@ -553,7 +553,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
   }
   
   Widget _buildVerificationForm() {
-    final primaryColor = MadadgarTheme.primaryColor;
+    const primaryColor = MadadgarTheme.primaryColor;
     final fontFamily = MadadgarTheme.fontFamily;
     
     return Form(

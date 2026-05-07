@@ -9,7 +9,7 @@ import 'package:***REMOVED***/config/theme.dart';
 class EditPostScreen extends StatefulWidget {
   final PostModel post;
 
-  const EditPostScreen({Key? key, required this.post}) : super(key: key);
+  const EditPostScreen({super.key, required this.post});
 
   @override
   _EditPostScreenState createState() => _EditPostScreenState();
@@ -21,7 +21,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
   late TextEditingController _descriptionController;
   String _selectedCategory = '';
   String _selectedRegion = '';
-  bool _isAnonymous = false;
+  bool _isPrivate = false;
   bool _isLoading = false;
 
  @override
@@ -35,7 +35,7 @@ void initState() {
     _descriptionController = TextEditingController(text: widget.post.description);
     _selectedCategory = widget.post.category;
     _selectedRegion = widget.post.region;
-    _isAnonymous = widget.post.isAnonymous;
+    _isPrivate = widget.post.isPrivate;
 }
 
   @override
@@ -49,7 +49,6 @@ void initState() {
   final List<String> _categories = [
     'Food',
     'Clothing',
-    'Education',
     'Medical',
     'Services',
     'Shelter',
@@ -84,7 +83,7 @@ void initState() {
         description: _descriptionController.text.trim(),
         category: _selectedCategory,
         region: _selectedRegion,
-        isAnonymous: _isAnonymous,
+        isPrivate: _isPrivate,
       );
       
       await postService.updatePost(updatedPost);
@@ -130,7 +129,7 @@ void initState() {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = MadadgarTheme.primaryColor;
+    const primaryColor = MadadgarTheme.primaryColor;
     final fontFamily = MadadgarTheme.fontFamily;
     
     return Scaffold(
@@ -423,7 +422,7 @@ void initState() {
                       
                       const SizedBox(height: 20),
                       
-                      // Anonymous toggle
+                      // Private toggle
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         decoration: BoxDecoration(
@@ -438,7 +437,7 @@ void initState() {
                               children: [
                                 Icon(
                                   Icons.visibility_off_outlined,
-                                  color: _isAnonymous ? primaryColor : Colors.grey[600],
+                                  color: _isPrivate ? primaryColor : Colors.grey[600],
                                   size: 20,
                                 ),
                                 const SizedBox(width: 12),
@@ -446,7 +445,7 @@ void initState() {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Post Anonymously',
+                                      'Verified-Private Post',
                                       style: TextStyle(
                                         fontFamily: fontFamily,
                                         fontWeight: FontWeight.w600,
@@ -455,7 +454,7 @@ void initState() {
                                       ),
                                     ),
                                     Text(
-                                      'Your name will not be visible to others',
+                                      'Identity verified by admins, hidden from public',
                                       style: TextStyle(
                                         fontFamily: fontFamily,
                                         fontSize: 11,
@@ -467,11 +466,11 @@ void initState() {
                               ],
                             ),
                             Switch(
-                              value: _isAnonymous,
+                              value: _isPrivate,
                               activeColor: primaryColor,
                               onChanged: (value) {
                                 setState(() {
-                                  _isAnonymous = value;
+                                  _isPrivate = value;
                                 });
                               },
                             ),

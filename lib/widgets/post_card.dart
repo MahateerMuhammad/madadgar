@@ -198,7 +198,7 @@ void _handleTap(BuildContext context) async {
                               const SizedBox(width: 8),
                               Flexible(
                                 child: Text(
-                                  post.userName,
+                                  post.isPrivate ? 'Private User' : post.userName,
                                   style: TextStyle(
                                     fontWeight: FontWeight.w500,
                                     color: Colors.grey.shade700,

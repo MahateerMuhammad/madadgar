@@ -289,7 +289,7 @@ class _NearbyScreenState extends State<NearbyScreen>
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = MadadgarTheme.primaryColor;
+    const primaryColor = MadadgarTheme.primaryColor;
     final fontFamily = MadadgarTheme.fontFamily;
 
     return Scaffold(

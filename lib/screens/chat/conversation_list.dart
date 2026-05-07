@@ -9,7 +9,7 @@ import 'package:***REMOVED***/services/post_service.dart';
 import 'package:***REMOVED***/config/theme.dart';
 
 class ConversationsListScreen extends StatefulWidget {
-  const ConversationsListScreen({Key? key}) : super(key: key);
+  const ConversationsListScreen({super.key});
 
   @override
   State<ConversationsListScreen> createState() => _ConversationsListScreenState();
@@ -41,7 +41,7 @@ class _ConversationsListScreenState extends State<ConversationsListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = MadadgarTheme.primaryColor;
+    const primaryColor = MadadgarTheme.primaryColor;
     final fontFamily = MadadgarTheme.fontFamily;
     final accentColor = HSLColor.fromColor(primaryColor).withLightness(0.85).toColor();
     

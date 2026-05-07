@@ -10,6 +10,8 @@ import 'package:***REMOVED***/config/theme.dart';
 import 'package:***REMOVED***/screens/post/edit_post_screen.dart';
 
 class MyPostsScreen extends StatefulWidget {
+  const MyPostsScreen({super.key});
+
   @override
   _MyPostsScreenState createState() => _MyPostsScreenState();
 }
@@ -382,7 +384,7 @@ Future<void> _deletePost(String postId) async {
     IconData icon,
     PostModel post,
   ) {
-    final primaryColor = MadadgarTheme.primaryColor;
+    const primaryColor = MadadgarTheme.primaryColor;
     
     return InkWell(
       onTap: () {
@@ -477,7 +479,7 @@ Future<void> _deletePost(String postId) async {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = MadadgarTheme.primaryColor;
+    const primaryColor = MadadgarTheme.primaryColor;
     final fontFamily = MadadgarTheme.fontFamily;
 
     return Scaffold(

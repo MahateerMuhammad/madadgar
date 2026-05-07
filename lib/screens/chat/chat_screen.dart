@@ -11,10 +11,10 @@ class ChatScreen extends StatefulWidget {
   final PostModel? post;
 
   const ChatScreen({
-    Key? key,
+    super.key,
     required this.conversation,
     this.post,
-  }) : super(key: key);
+  });
 
   @override
   _ChatScreenState createState() => _ChatScreenState();

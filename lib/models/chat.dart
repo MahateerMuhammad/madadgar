@@ -127,7 +127,7 @@ class ChatConversation {
     bool? isAnonymous,  // Added isAnonymous to copyWith
   }) {
     return ChatConversation(
-      id: this.id,
+      id: id,
       postId: postId ?? this.postId,
       postTitle: postTitle ?? this.postTitle,
       postType: postType ?? this.postType,

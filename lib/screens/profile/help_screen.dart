@@ -17,7 +17,7 @@ class _HelpScreenState extends State<HelpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = MadadgarTheme.primaryColor;
+    const primaryColor = MadadgarTheme.primaryColor;
     final fontFamily = MadadgarTheme.fontFamily;
     final accentColor =
         HSLColor.fromColor(primaryColor).withLightness(0.85).toColor();
@@ -149,7 +149,7 @@ class _HelpScreenState extends State<HelpScreen> {
           {
             'question': 'What is Madadgar?',
             'answer':
-                'Madadgar is a community-driven platform designed to connect people in need with those who are willing to offer help. Our mission is to facilitate resource sharing, mutual aid, and community support in a dignified and accessible way.\n\nThe app allows users to post requests for assistance or offers to help across various categories including food, education, healthcare, and more. By eliminating middlemen and bureaucracy, we create direct connections between community members.',
+                'Madadgar is a community-driven platform designed to connect people in need with those who are willing to offer help. Our mission is to facilitate resource sharing, mutual aid, and community support in a dignified and accessible way.\n\nThe app allows users to post requests for assistance or offers to help across various categories including food, healthcare, and more. By eliminating middlemen and bureaucracy, we create direct connections between community members.',
           },
           {
             'question': 'How to use Madadgar',

@@ -11,9 +11,9 @@ class PostDetailChatWidget extends StatefulWidget {
   final PostModel post;
 
   const PostDetailChatWidget({
-    Key? key,
+    super.key,
     required this.post,
-  }) : super(key: key);
+  });
 
   @override
   _PostDetailChatWidgetState createState() => _PostDetailChatWidgetState();

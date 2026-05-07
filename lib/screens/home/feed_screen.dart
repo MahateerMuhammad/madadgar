@@ -167,7 +167,7 @@ void initState() {
  @override
 Widget build(BuildContext context) {
   super.build(context);
-  final primaryColor = MadadgarTheme.primaryColor;
+  const primaryColor = MadadgarTheme.primaryColor;
   final fontFamily = MadadgarTheme.fontFamily;
   
   return AnnotatedRegion<SystemUiOverlayStyle>(

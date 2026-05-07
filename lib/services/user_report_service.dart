@@ -4,6 +4,7 @@ import 'package:***REMOVED***/models/userreport.dart';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class UserReportService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -11,9 +12,9 @@ class UserReportService {
   final String _collectionName = 'user_reports';
   
   // Cloudinary configuration
-  final String cloudName = "***REMOVED***";
-  final String presetName = "***REMOVED***";
-  final String uploadUrl = "https://api.cloudinary.com/v1_1/***REMOVED***/image/upload";
+  final String cloudName = dotenv.env['CLOUDINARY_CLOUD_NAME'] ?? '';
+  final String presetName = dotenv.env['CLOUDINARY_UPLOAD_PRESET'] ?? '';
+  late final String uploadUrl = "https://api.cloudinary.com/v1_1/$cloudName/image/upload";
   final Dio _dio = Dio();
 
   // Create a new report

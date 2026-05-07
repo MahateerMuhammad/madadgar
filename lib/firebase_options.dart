@@ -3,6 +3,7 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -40,8 +41,8 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: '***REMOVED***',
+  static FirebaseOptions get web => FirebaseOptions(
+    apiKey: dotenv.env['FIREBASE_API_KEY_WEB'] ?? '',
     appId: '1:543085921164:web:a229a29630f07981bc8ca9',
     messagingSenderId: '543085921164',
     projectId: '***REMOVED***-f2760',
@@ -50,16 +51,16 @@ class DefaultFirebaseOptions {
     measurementId: 'G-R4PCRKGL4P',
   );
 
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: '***REMOVED***',
+  static FirebaseOptions get android => FirebaseOptions(
+    apiKey: dotenv.env['FIREBASE_API_KEY_ANDROID'] ?? '',
     appId: '1:543085921164:android:fc7f037c90aea586bc8ca9',
     messagingSenderId: '543085921164',
     projectId: '***REMOVED***-f2760',
     storageBucket: '***REMOVED***-f2760.firebasestorage.app',
   );
 
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: '***REMOVED***',
+  static FirebaseOptions get ios => FirebaseOptions(
+    apiKey: dotenv.env['FIREBASE_API_KEY_IOS'] ?? '',
     appId: '1:543085921164:ios:d367fa9e23b1da61bc8ca9',
     messagingSenderId: '543085921164',
     projectId: '***REMOVED***-f2760',
@@ -67,8 +68,8 @@ class DefaultFirebaseOptions {
     iosBundleId: 'com.example.***REMOVED***',
   );
 
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: '***REMOVED***',
+  static FirebaseOptions get macos => FirebaseOptions(
+    apiKey: dotenv.env['FIREBASE_API_KEY_MACOS'] ?? '',
     appId: '1:543085921164:ios:d367fa9e23b1da61bc8ca9',
     messagingSenderId: '543085921164',
     projectId: '***REMOVED***-f2760',
@@ -76,8 +77,8 @@ class DefaultFirebaseOptions {
     iosBundleId: 'com.example.***REMOVED***',
   );
 
-  static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: '***REMOVED***',
+  static FirebaseOptions get windows => FirebaseOptions(
+    apiKey: dotenv.env['FIREBASE_API_KEY_WINDOWS'] ?? '',
     appId: '1:543085921164:web:22b0457eee0397c5bc8ca9',
     messagingSenderId: '543085921164',
     projectId: '***REMOVED***-f2760',

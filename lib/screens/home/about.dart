@@ -10,7 +10,7 @@ class AboutScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = MadadgarTheme.primaryColor;
+    const primaryColor = MadadgarTheme.primaryColor;
     final fontFamily = MadadgarTheme.fontFamily;
     final accentColor = HSLColor.fromColor(primaryColor).withLightness(0.85).toColor();
     
@@ -237,14 +237,6 @@ class AboutScreen extends StatelessWidget {
                     fontFamily: fontFamily,
                     primaryColor: primaryColor,
                   ),
-                  SizedBox(width: 12),
-                  _buildMissionPoint(
-                    icon: Icons.school_outlined,
-                    title: 'Education',
-                    description: 'Sharing knowledge and resources',
-                    fontFamily: fontFamily,
-                    primaryColor: primaryColor,
-                  ),
                 ],
               ),
             ],
@@ -418,7 +410,7 @@ class AboutScreen extends StatelessWidget {
   }
 Widget _buildTeamSection(String fontFamily, Color primaryColor) {
   // Define a common width factor to ensure all boxes have the same width
-  final double boxWidth = 142.0;
+  const double boxWidth = 142.0;
   
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
@@ -454,7 +446,7 @@ Widget _buildTeamSection(String fontFamily, Color primaryColor) {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Container(
+                SizedBox(
                   width: boxWidth,
                   child: _buildTeamMember(
                     name: 'Mahateer M',
@@ -465,7 +457,7 @@ Widget _buildTeamSection(String fontFamily, Color primaryColor) {
                   ),
                 ),
                 SizedBox(width: 20),
-                Container(
+                SizedBox(
                   width: boxWidth,
                   child: _buildTeamMember(
                     name: 'Arsal Ajmal',
@@ -482,7 +474,7 @@ Widget _buildTeamSection(String fontFamily, Color primaryColor) {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Container(
+                SizedBox(
                   width: boxWidth,
                   child: _buildTeamMember(
                     name: 'Maham kamran',
@@ -493,7 +485,7 @@ Widget _buildTeamSection(String fontFamily, Color primaryColor) {
                   ),
                 ),
                 SizedBox(width: 20),
-                Container(
+                SizedBox(
                   width: boxWidth,
                   child: _buildTeamMember(
                     name: 'Shah Abdullah',
@@ -508,7 +500,7 @@ Widget _buildTeamSection(String fontFamily, Color primaryColor) {
             SizedBox(height: 16),
             // Third row with 1 team member centered
             Center(
-              child: Container(
+              child: SizedBox(
                 width: boxWidth,
                 child: _buildTeamMember(
                   name: 'Fatima Faisal',

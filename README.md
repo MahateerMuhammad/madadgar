@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Web-lightgrey.svg)](https://flutter.dev/)
 
-> **Madadgar** is a modern, Flutter-based mobile application that revolutionizes community aid and resource sharing. It serves as a comprehensive platform where community members can seamlessly connect to offer help, seek assistance, and share educational resources.
+> **Madadgar** is a modern, Flutter-based mobile application that revolutionizes community aid and resource sharing. It serves as a comprehensive platform where community members can seamlessly connect to offer help and seek assistance.
 
 ## ✨ Why Choose Madadgar?
 
@@ -14,7 +14,6 @@ Madadgar isn't just another social app—it's a **purpose-built community aid ec
 - 🎯 **Purpose-Built for Aid**: Unlike general social platforms, every feature is designed specifically for community assistance
 - 🔐 **Trust-First Approach**: Multi-tier verification system ensures safe and reliable interactions
 - 📍 **Hyper-Local Focus**: Find help exactly where you need it, when you need it
-- 🎓 **Education Integration**: The only platform that combines community aid with educational resource sharing
 - 🚀 **Modern Technology**: Built with Flutter and Firebase for reliability and performance
 
 ## 🌟 Features
@@ -23,12 +22,12 @@ Madadgar isn't just another social app—it's a **purpose-built community aid ec
 - **Dual Post System**: Create "Need" posts (requesting help) or "Offer" posts (providing assistance)
 - **Category-Based Organization**: Food, Clothing, Education, Medical, Services, Shelter, and more
 - **Location-Aware Matching**: Find help and helpers in your specific region
-- **Anonymous Posting**: Privacy protection for sensitive requests
+- **Verified-Private Posting**: Privacy protection for sensitive requests, backed by verified identity
 
 ### 🔐 Advanced Verification System
 - **Multi-tier Verification**: Phone, email, and identity verification
-- **Community Reputation Scoring**: Help count and thank count tracking
-- **Verified Badge System**: Visual trust indicators for reliable community members
+- **Madadgar Trust Score**: Server-side algorithmic score tracking community trust. Max 100 points based on verification (+20), helps (+10), and thanks (+5).
+- **Verified Badge System**: Visual trust indicators for reliable community members (Bronze, Silver, Gold tiers)
 
 ### 💬 Real-Time Communication
 - **Integrated Chat System**: Direct messaging between helpers and seekers
@@ -36,11 +35,6 @@ Madadgar isn't just another social app—it's a **purpose-built community aid ec
 - **Media Sharing**: Image and file sharing capabilities
 - **Response Tracking**: Monitor engagement and response rates
 
-### 📚 Educational Resource Sharing
-- **Curated Content Library**: Community-uploaded educational materials
-- **Multi-Format Support**: PDFs, documents, presentations, videos, images
-- **Category Organization**: Structured learning materials
-- **Download & Like Tracking**: Engagement metrics for quality content
 
 ### 📍 Location-Based Discovery
 - **Nearby Help Finder**: Discover assistance opportunities in your area
@@ -50,7 +44,7 @@ Madadgar isn't just another social app—it's a **purpose-built community aid ec
 ### 🛡️ Safety & Reporting
 - **Multi-Level Reporting System**: Report posts, users, and inappropriate content
 - **Content Moderation**: Community-driven safety mechanisms
-- **Privacy Controls**: Anonymous posting and selective information sharing
+- **Privacy Controls**: Verified-private posting and selective information sharing
 
 ## 🚀 Getting Started
 
@@ -115,7 +109,6 @@ lib/
 │   ├── user.dart
 │   ├── post.dart
 │   ├── chat.dart
-│   ├── education.dart
 │   └── report.dart
 ├── screens/          # UI screens
 │   ├── auth/
@@ -123,19 +116,16 @@ lib/
 │   ├── post/
 │   ├── chat/
 │   ├── profile/
-│   ├── education/
 │   └── verification/
 ├── services/         # Business logic
 │   ├── auth_service.dart
 │   ├── post_service.dart
 │   ├── chat_service.dart
-│   ├── edu_service.dart
 │   └── location_service.dart
 ├── widgets/          # Reusable components
 │   ├── custom_button.dart
 │   ├── custom_text_field.dart
-│   ├── post_card.dart
-│   └── resource_card.dart
+│   └── post_card.dart
 └── main.dart         # App entry point
 ```
 
@@ -163,6 +153,10 @@ lib/
 
 ## 🎯 How It Works
 
+### Pre-Launch Setup (Cold Start)
+1. **Supply Seeding**: Partner NGOs and local businesses bypass verification holds to pre-populate the platform with offers ("supply").
+2. **Waitlist Management**: General users join a region-based waitlist and are gradually invited as supply meets demand.
+
 ### For Help Seekers:
 1. **Register & Verify** → Complete profile with regional information
 2. **Create Need Post** → Describe requirement with category and location
@@ -177,16 +171,10 @@ lib/
 4. **Coordinate Help** → Arrange meeting/delivery through secure messaging
 5. **Complete Assistance** → Provide help and receive community recognition
 
-### For Educators/Students:
-1. **Access Resource Library** → Browse educational materials by category
-2. **Upload Content** → Share learning resources with community
-3. **Download Materials** → Access free educational content
-4. **Engage with Content** → Like and provide feedback on resources
 
 ## 🎯 Target Audience
 
 - **Community Members & Neighbors** - Local help seekers and providers
-- **Students & Educators** - Educational resource sharing
 - **NGOs & Organizations** - Community aid coordination
 - **Local Businesses** - Community service offerings
 - **Verified Helpers** - Trusted community contributors
@@ -251,7 +239,6 @@ If you find Madadgar helpful, please consider giving it a ⭐ on GitHub! Your su
   - Authentication system
   - Post management
   - Real-time chat
-  - Educational resources
   - Location services
   - Reporting system
 
@@ -268,7 +255,6 @@ If you find Madadgar helpful, please consider giving it a ⭐ on GitHub! Your su
 - Core authentication system with Firebase
 - Complete post management (Create, Read, Update, Delete)
 - Real-time chat system with media sharing
-- Educational resource sharing platform
 - Location-based services with regional filtering
 - Comprehensive reporting and safety system
 - Responsive UI/UX with custom theming
@@ -285,7 +271,7 @@ If you find Madadgar helpful, please consider giving it a ⭐ on GitHub! Your su
 - **v0.3.0**: AI-powered matching for better help connections
 - **v0.4.0**: Multi-language support for broader accessibility
 - **v0.5.0**: Advanced moderation tools with AI assistance
-- **v1.0.0**: Blockchain verification for ultimate trust
+- **v1.0.0**: Federated identity verification (NADRA integration) for ultimate trust
 - **Beyond**: Integration APIs for NGO and government systems
 
 ### 🎯 Long-term Vision

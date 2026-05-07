@@ -176,6 +176,9 @@ class PostService {
   // Add a new post to Firestore
   Future<void> addPost(PostModel post) async {
     try {
+      // Note: In v1.0.0, we will add a moderation hold for new users.
+      // However, if the user is a partner organization (user.isPartnerOrg == true), 
+      // this hold will be bypassed to allow immediate supply seeding.
       final docRef = _firestore.collection(_collectionName).doc();
       final newPost = post.copyWith(id: docRef.id);
       await docRef.set(newPost.toMap());

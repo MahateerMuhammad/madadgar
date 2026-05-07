@@ -8,7 +8,7 @@ import 'package:***REMOVED***/config/theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class UserSearchWidget extends StatefulWidget {
-  const UserSearchWidget({Key? key}) : super(key: key);
+  const UserSearchWidget({super.key});
 
   @override
   State<UserSearchWidget> createState() => _UserSearchWidgetState();
@@ -65,7 +65,7 @@ class _UserSearchWidgetState extends State<UserSearchWidget> {
   @override
   Widget build(BuildContext context) {
     final fontFamily = MadadgarTheme.fontFamily;
-    final primaryColor = MadadgarTheme.primaryColor;
+    const primaryColor = MadadgarTheme.primaryColor;
     
     return Column(
       children: [

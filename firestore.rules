@@ -1,0 +1,86 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Function to check if user is accessing their own data
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Function to check if user is an admin or partner org (custom claims)
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.admin == true;
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      // Anyone can read user profiles (needed for post display)
+      // but only the owner or admins can modify
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Posts Collection
+    match /posts/{postId} {
+      // Anyone authenticated can read posts
+      allow read: if isAuthenticated();
+      
+      // Verified-Private Posting Rules
+      // Only the owner can create/update their post
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // Conversations Collection
+    match /conversations/{conversationId} {
+      allow read: if isAuthenticated() && (
+        resource.data.participant1Id == request.auth.uid || 
+        resource.data.participant2Id == request.auth.uid
+      );
+      allow create: if isAuthenticated() && (
+        request.resource.data.participant1Id == request.auth.uid || 
+        request.resource.data.participant2Id == request.auth.uid
+      );
+      allow update: if isAuthenticated() && (
+        resource.data.participant1Id == request.auth.uid || 
+        resource.data.participant2Id == request.auth.uid
+      );
+      
+      // Messages Subcollection
+      match /messages/{messageId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated() && request.resource.data.senderId == request.auth.uid;
+        allow update, delete: if false; // Messages cannot be edited or deleted
+      }
+    }
+    
+    // Waitlist Collection
+    match /waitlist/{waitlistId} {
+      // Anyone can add themselves to the waitlist
+      allow create: if true;
+      // Only admins can read, update, or delete waitlist entries
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Verifications Collection
+    match /verifications/{verificationId} {
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow update, delete: if isAdmin();
+    }
+
+    // Reports Collection
+    match /reports/{reportId} {
+      allow create: if isAuthenticated();
+      allow read, update, delete: if isAdmin();
+    }
+  }
+}

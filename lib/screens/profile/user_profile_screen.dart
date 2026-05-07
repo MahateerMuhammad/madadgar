@@ -5,19 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:***REMOVED***/config/theme.dart';
 import 'package:***REMOVED***/models/user.dart';
 import 'package:***REMOVED***/models/post.dart';
-import 'package:***REMOVED***/models/education.dart';
 import 'package:***REMOVED***/services/user_service.dart';
 import 'package:***REMOVED***/services/post_service.dart';
-import 'package:***REMOVED***/services/edu_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:***REMOVED***/screens/education/resource_detail_screen.dart';
 import 'package:***REMOVED***/screens/post/post_detail_screen.dart';
 import 'package:***REMOVED***/screens/profile/user_report_screen.dart';
+import 'package:***REMOVED***/screens/verification/cnic_scan_screen.dart';
 
 class UserProfileScreen extends StatefulWidget {
   final String userId;
 
-  const UserProfileScreen({Key? key, required this.userId}) : super(key: key);
+  const UserProfileScreen({super.key, required this.userId});
 
   @override
   State<UserProfileScreen> createState() => _UserProfileScreenState();
@@ -26,7 +24,6 @@ class UserProfileScreen extends StatefulWidget {
 class _UserProfileScreenState extends State<UserProfileScreen> with SingleTickerProviderStateMixin {
   final UserService _userService = UserService();
   final PostService _postService = PostService();
-  final EducationalResourceService _educationalResourceService = EducationalResourceService();
   
   late Future<UserModel> _userFuture;
   TabController? _tabController;
@@ -36,7 +33,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> with SingleTicker
   void initState() {
     super.initState();
     _loadUserData();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 1, vsync: this);
     _tabController!.addListener(() {
       if (mounted) {
         setState(() {});
@@ -72,19 +69,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> with SingleTicker
     }
   }
 
-  Future<List<EducationalResourceModel>> _fetchUserResources() async {
-    try {
-      return await _educationalResourceService.getResourcesByUploader(widget.userId);
-    } catch (e) {
-      print('Error fetching user resources: $e');
-      rethrow;
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {
     final fontFamily = MadadgarTheme.fontFamily;
-    final primaryColor = MadadgarTheme.primaryColor;
+    const primaryColor = MadadgarTheme.primaryColor;
     
     if (_tabController == null) {
       return Scaffold(
@@ -177,10 +167,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> with SingleTicker
                         icon: Icon(Icons.post_add),
                         text: 'Posts',
                       ),
-                      Tab(
-                        icon: Icon(Icons.school),
-                        text: 'Resources',
-                      ),
                     ],
                   ),
                 ),
@@ -190,9 +176,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> with SingleTicker
                     children: [
                       // Posts Tab
                       _buildPostsTab(fontFamily),
-                      
-                      // Educational Resources Tab
-                      _buildResourcesTab(fontFamily),
                     ],
                   ),
                 ),
@@ -205,7 +188,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> with SingleTicker
 
   Widget _buildUserProfileHeader(UserModel user) {
     final fontFamily = MadadgarTheme.fontFamily;
-    final primaryColor = MadadgarTheme.primaryColor;
+    const primaryColor = MadadgarTheme.primaryColor;
     
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
@@ -318,22 +301,46 @@ class _UserProfileScreenState extends State<UserProfileScreen> with SingleTicker
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Add report button
-            OutlinedButton.icon(
-              onPressed: () => _openReportUserDialog(user),
-              icon: Icon(Icons.flag, size: 18,color:Colors.red[700] ,),
-              label: Text(
-                'Report',
-                style: TextStyle(fontFamily: fontFamily),
-              ),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.red[700],
-                side: BorderSide(color: Colors.red[300]!),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+            if (user.id != FirebaseAuth.instance.currentUser?.uid)
+              OutlinedButton.icon(
+                onPressed: () => _openReportUserDialog(user),
+                icon: Icon(Icons.flag, size: 18,color:Colors.red[700] ,),
+                label: Text(
+                  'Report',
+                  style: TextStyle(fontFamily: fontFamily),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.red[700],
+                  side: BorderSide(color: Colors.red[300]!),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                ),
               ),
-            ),
+            
+            // Add Verify Identity button
+            if (user.id == FirebaseAuth.instance.currentUser?.uid && !user.isVerified)
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const CnicScanScreen()),
+                  );
+                },
+                icon: const Icon(Icons.security, size: 18, color: Colors.white),
+                label: Text(
+                  'Verify Identity',
+                  style: TextStyle(fontFamily: fontFamily, color: Colors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: MadadgarTheme.primaryColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                ),
+              ),
           ],
         ),
         ],
@@ -343,7 +350,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> with SingleTicker
 
   Widget _buildStatItem(String label, String value, IconData icon) {
     final fontFamily = MadadgarTheme.fontFamily;
-    final primaryColor = MadadgarTheme.primaryColor;
+    const primaryColor = MadadgarTheme.primaryColor;
     
     return Column(
       children: [
@@ -434,405 +441,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> with SingleTicker
     );
   }
 
-  Widget _buildResourcesTab(String fontFamily) {
-    return FutureBuilder<List<EducationalResourceModel>>(
-      future: _fetchUserResources(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        
-        if (snapshot.hasError) {
-          return Center(
-            child: Text(
-              'Error: ${snapshot.error}',
-              style: TextStyle(fontFamily: fontFamily),
-            ),
-          );
-        }
-        
-        final resources = snapshot.data ?? [];
-        if (resources.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.school,
-                  size: 60,
-                  color: Colors.grey[400],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'No educational resources yet',
-                  style: TextStyle(
-                    fontFamily: fontFamily,
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-        
-        return ListView.builder(
-          padding: const EdgeInsets.all(12.0),
-          itemCount: resources.length,
-          itemBuilder: (context, index) {
-            return _buildResourceCard(resources[index], fontFamily);
-          },
-        );
-      },
-    );
-  }
 
-  Widget _buildPostCard(PostModel post, String fontFamily) {
-    final primaryColor = MadadgarTheme.primaryColor;
-    
-    return InkWell(
-      onTap: () {
-        // Navigate to post detail only if the post is active
-        if (post.status == PostStatus.active) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PostDetailScreen(post: post),
-            ),
-          );
-        }
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Card(
-        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        elevation: 0,
-        color: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: Colors.grey.withOpacity(0.1), width: 1),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: post.type == PostType.need 
-                          ? Colors.orange.withOpacity(0.1) 
-                          : Colors.green.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(
-                      post.type == PostType.need 
-                          ? Icons.help_outline 
-                          : Icons.volunteer_activism,
-                      color: post.type == PostType.need 
-                          ? Colors.orange[700] 
-                          : Colors.green[700],
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          post.title,
-                          style: TextStyle(
-                            fontFamily: fontFamily,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _formatDate(post.createdAt),
-                          style: TextStyle(
-                            fontFamily: fontFamily,
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: _getStatusColor(post.status).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    child: Text(
-                      _formatStatus(post.status),
-                      style: TextStyle(
-                        fontFamily: fontFamily,
-                        fontSize: 12,
-                        color: _getStatusColor(post.status),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                post.description,
-                style: TextStyle(
-                  fontFamily: fontFamily,
-                  fontSize: 14,
-                  color: Colors.black87,
-                ),
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      post.category,
-                      style: TextStyle(
-                        fontFamily: fontFamily,
-                        fontSize: 12,
-                        color: Colors.blue[700],
-                      ),
-                    ),
-                  ),
-                  const Spacer(),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.visibility_outlined,
-                        size: 14,
-                        color: Colors.grey[600],
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        "${post.viewCount} views",
-                        style: TextStyle(
-                          fontFamily: fontFamily,
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildResourceCard(EducationalResourceModel resource, String fontFamily) {
-    return InkWell(
-      onTap: () {
-        // Navigate to resource detail screen when clicked
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ResourceDetailScreen(resource: resource),
-          ),
-        );
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Card(
-        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        elevation: 0,
-        color: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: Colors.grey.withOpacity(0.1), width: 1),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildResourceTypeIcon(resource.fileType),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      resource.title,
-                      style: TextStyle(
-                        fontFamily: fontFamily,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      resource.description,
-                      style: TextStyle(
-                        fontFamily: fontFamily,
-                        fontSize: 14,
-                        color: Colors.black87,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.blue.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            resource.category,
-                            style: TextStyle(
-                              fontFamily: fontFamily,
-                              fontSize: 12,
-                              color: Colors.blue[700],
-                            ),
-                          ),
-                        ),
-                        if (resource.subCategory.isNotEmpty) ...[
-                          const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              resource.subCategory,
-                              style: TextStyle(
-                                fontFamily: fontFamily,
-                                fontSize: 12,
-                                color: Colors.grey[700],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.favorite, size: 14, color: Colors.grey[600]),
-                            const SizedBox(width: 4),
-                            Text(
-                              "${resource.likeCount}",
-                              style: TextStyle(
-                                fontFamily: fontFamily,
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(width: 16),
-                        Row(
-                          children: [
-                            Icon(Icons.download, size: 14, color: Colors.grey[600]),
-                            const SizedBox(width: 4),
-                            Text(
-                              "${resource.downloadCount}",
-                              style: TextStyle(
-                                fontFamily: fontFamily,
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const Spacer(),
-                        Text(
-                          _formatDate(resource.createdAt),
-                          style: TextStyle(
-                            fontFamily: fontFamily,
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildResourceTypeIcon(String fileType) {
-    IconData icon;
-    Color color;
-    
-    switch (fileType.toLowerCase()) {
-      case 'pdf':
-        icon = Icons.picture_as_pdf;
-        color = Colors.red;
-        break;
-      case 'doc':
-      case 'docx':
-        icon = Icons.description;
-        color = Colors.blue;
-        break;
-      case 'ppt':
-      case 'pptx':
-        icon = Icons.slideshow;
-        color = Colors.orange;
-        break;
-      case 'xls':
-      case 'xlsx':
-        icon = Icons.table_chart;
-        color = Colors.green;
-        break;
-      case 'image':
-      case 'jpg':
-      case 'jpeg':
-      case 'png':
-        icon = Icons.image;
-        color = Colors.purple;
-        break;
-      case 'video':
-      case 'mp4':
-        icon = Icons.video_library;
-        color = Colors.red.shade700;
-        break;
-      case 'audio':
-      case 'mp3':
-        icon = Icons.audiotrack;
-        color = Colors.cyan;
-        break;
-      default:
-        icon = Icons.insert_drive_file;
-        color = Colors.grey;
-    }
-    
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Icon(icon, color: color, size: 20),
-    );
-  }
 
   Color _getStatusColor(PostStatus status) {
     switch (status) {

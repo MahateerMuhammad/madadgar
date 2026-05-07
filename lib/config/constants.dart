@@ -7,7 +7,6 @@ class AppConstants {
   static const List<String> categories = [
     'Food',
     'Clothing',
-    'Education',
     'Medical',
     'Services',
     'Shelter',

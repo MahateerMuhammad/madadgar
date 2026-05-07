@@ -39,7 +39,7 @@ class MadadgarTheme {
     scaffoldBackgroundColor: backgroundColor,
     fontFamily: fontFamily,
     appBarTheme: AppBarTheme(
-      color: primaryColor,
+      backgroundColor: primaryColor,
       elevation: 0,
       iconTheme: const IconThemeData(color: Colors.white),
       titleTextStyle: TextStyle(

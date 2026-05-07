@@ -13,7 +13,7 @@ class PostModel {
   final String description;
   final String category;
   final String region;
-  final bool isAnonymous;
+  final bool isPrivate;
   final List<String> images;
   final PostStatus status;
   final int viewCount;
@@ -31,7 +31,7 @@ class PostModel {
     required this.description,
     required this.category,
     required this.region,
-    this.isAnonymous = false,
+    this.isPrivate = false,
     this.images = const [],
     this.status = PostStatus.active,
     this.viewCount = 0,
@@ -52,7 +52,7 @@ class PostModel {
       'description': description,
       'category': category,
       'region': region,
-      'isAnonymous': isAnonymous,
+      'isPrivate': isPrivate,
       'images': images,
       'status': status.toString().split('.').last,
       'viewCount': viewCount,
@@ -75,7 +75,7 @@ class PostModel {
         description: map['description'] ?? '',
         category: map['category'] ?? '',
         region: map['region'] ?? '',
-        isAnonymous: map['isAnonymous'] ?? false,
+        isPrivate: map['isPrivate'] ?? false,
         images: List<String>.from(map['images'] ?? []),
         status: _mapStringToStatus(map['status']),
         viewCount: map['viewCount'] ?? 0,
@@ -119,7 +119,7 @@ class PostModel {
   String? description,
   String? category,
   String? region,
-  bool? isAnonymous,
+  bool? isPrivate,
   List<String>? images,
   PostStatus? status,
   int? viewCount,
@@ -135,7 +135,7 @@ class PostModel {
     description: description ?? this.description,
     category: category ?? this.category,
     region: region ?? this.region,
-    isAnonymous: isAnonymous ?? this.isAnonymous,
+    isPrivate: isPrivate ?? this.isPrivate,
     images: images ?? this.images,
     status: status ?? this.status,
     viewCount: viewCount ?? this.viewCount,

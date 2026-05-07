@@ -21,7 +21,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   String _title = '';
   String _description = '';
   String _category = AppConstants.categories.first;
-  bool _isAnonymous = false;
+  bool _isPrivate = false;
 
   bool _isSubmitting = false;
 
@@ -42,14 +42,14 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       final newPost = PostModel(
         id: '',
         userId: user.id,
-        userName: _isAnonymous ? 'Anonymous' : user.name,
-        userImage: _isAnonymous ? '' : user.profileImage,
+        userName: _isPrivate ? 'Private User' : user.name,
+        userImage: _isPrivate ? '' : user.profileImage,
         type: _postType,
         title: _title,
         description: _description,
         category: _category,
         region: user.region,
-        isAnonymous: _isAnonymous,
+        isPrivate: _isPrivate,
         images: [], // image upload support can be added later
         status: PostStatus.active,
         viewCount: 0,
@@ -159,8 +159,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 _buildCategoryDropdown(),
                 const SizedBox(height: 20),
                 
-                // Anonymous toggle
-                _buildAnonymousToggle(),
+                // Private toggle
+                _buildPrivateToggle(),
                 const SizedBox(height: 30),
                 
                 // Submit button
@@ -345,7 +345,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   );
 }
 
-  Widget _buildAnonymousToggle() {
+  Widget _buildPrivateToggle() {
     return Container(
       decoration: BoxDecoration(
         color: Colors.grey.shade100,
@@ -356,15 +356,15 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         title: Row(
           children: [
             Icon(
-              _isAnonymous ? Icons.visibility_off : Icons.visibility,
-              color: _isAnonymous 
+              _isPrivate ? Icons.visibility_off : Icons.visibility,
+              color: _isPrivate 
                 ? MadadgarTheme.primaryColor 
                 : Colors.grey.shade600,
               size: 20,
             ),
             const SizedBox(width: 12),
             Text(
-              'Post Anonymously',
+              'Verified-Private Post',
               style: TextStyle(
                 fontWeight: FontWeight.w500,
                 color: Colors.grey.shade700,
@@ -373,16 +373,16 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           ],
         ),
         subtitle: Text(
-          _isAnonymous 
-              ? 'Your identity will be hidden' 
+          _isPrivate 
+              ? 'Identity verified by admins, hidden from public' 
               : 'Your name will be visible',
           style: TextStyle(
             fontSize: 12,
             color: Colors.grey.shade600,
           ),
         ),
-        value: _isAnonymous,
-        onChanged: (val) => setState(() => _isAnonymous = val),
+        value: _isPrivate,
+        onChanged: (val) => setState(() => _isPrivate = val),
         activeColor: MadadgarTheme.primaryColor,
       ),
     );

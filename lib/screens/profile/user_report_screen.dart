@@ -15,10 +15,10 @@ class ReportUserScreen extends StatefulWidget {
   final String reportedUserName;
 
   const ReportUserScreen({
-    Key? key,
+    super.key,
     required this.reportedUserId,
     required this.reportedUserName,
-  }) : super(key: key);
+  });
 
   @override
   State<ReportUserScreen> createState() => _ReportUserScreenState();
@@ -204,7 +204,7 @@ class _ReportUserScreenState extends State<ReportUserScreen> {
   @override
   Widget build(BuildContext context) {
     final fontFamily = MadadgarTheme.fontFamily;
-    final primaryColor = MadadgarTheme.primaryColor;
+    const primaryColor = MadadgarTheme.primaryColor;
     
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -426,7 +426,7 @@ class _ReportUserScreenState extends State<ReportUserScreen> {
                     
                     // Selected images
                     if (_selectedImages.isNotEmpty)
-                      Container(
+                      SizedBox(
                         height: 120,
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,
