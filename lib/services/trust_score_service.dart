@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:***REMOVED***/models/user.dart';
+import 'package:madadgar/models/user.dart';
 
 class TrustScoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

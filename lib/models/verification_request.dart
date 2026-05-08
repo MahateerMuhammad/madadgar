@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum VerificationStatus { pending, approved, rejected }
 

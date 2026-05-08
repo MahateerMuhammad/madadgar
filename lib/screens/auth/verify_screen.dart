@@ -1,8 +1,8 @@
 // import 'package:flutter/material.dart';
 // import 'package:provider/provider.dart';
-// import 'package:***REMOVED***/config/routes.dart';
-// import 'package:***REMOVED***/services/auth_service.dart';
-// import 'package:***REMOVED***/widgets/custom_button.dart';
+// import 'package:madadgar/config/routes.dart';
+// import 'package:madadgar/services/auth_service.dart';
+// import 'package:madadgar/widgets/custom_button.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
 
 // class VerifyScreen extends StatefulWidget {

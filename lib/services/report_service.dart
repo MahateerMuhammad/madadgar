@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:***REMOVED***/models/report.dart';
-import 'package:***REMOVED***/services/user_service.dart';
+import 'package:madadgar/models/report.dart';
+import 'package:madadgar/services/user_service.dart';
 
 class ReportService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:***REMOVED***/screens/auth/login_screen.dart';
+import 'package:madadgar/screens/auth/login_screen.dart';
 // Import other screens as you implement them
-import 'package:***REMOVED***/screens/auth/register_screen.dart';
-// import 'package:***REMOVED***/screens/auth/verify_screen.dart';
-import 'package:***REMOVED***/screens/auth/forgot_screen_password.dart';
-import 'package:***REMOVED***/screens/home/home_screen.dart';
-import 'package:***REMOVED***/screens/post/create_post_screen.dart';
- //import 'package:***REMOVED***/screens/post/post_detail_screen.dart';
-// import 'package:***REMOVED***/screens/post/my_posts_screen.dart';
-import 'package:***REMOVED***/screens/profile/profile_screen.dart';
+import 'package:madadgar/screens/auth/register_screen.dart';
+// import 'package:madadgar/screens/auth/verify_screen.dart';
+import 'package:madadgar/screens/auth/forgot_screen_password.dart';
+import 'package:madadgar/screens/home/home_screen.dart';
+import 'package:madadgar/screens/post/create_post_screen.dart';
+ //import 'package:madadgar/screens/post/post_detail_screen.dart';
+// import 'package:madadgar/screens/post/my_posts_screen.dart';
+import 'package:madadgar/screens/profile/profile_screen.dart';
 
 class AppRoutes {
   static const String login = '/login';

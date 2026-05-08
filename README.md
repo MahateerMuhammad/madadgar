@@ -59,8 +59,8 @@ Madadgar isn't just another social app—it's a **purpose-built community aid ec
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/MahateerMuhammad/***REMOVED***.git
-   cd ***REMOVED***
+   git clone https://github.com/MahateerMuhammad/madadgar.git
+   cd madadgar
    ```
 
 2. **Install dependencies**
@@ -244,8 +244,8 @@ If you find Madadgar helpful, please consider giving it a ⭐ on GitHub! Your su
 
 ## 📞 Support & Contact
 
-- **Issues**: [GitHub Issues](https://github.com/MahateerMuhammad/***REMOVED***/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/MahateerMuhammad/***REMOVED***/discussions)
+- **Issues**: [GitHub Issues](https://github.com/MahateerMuhammad/madadgar/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/MahateerMuhammad/madadgar/discussions)
 - **Email**: mahateermuhammad100@gmail.com
 - **GitHub**: [@MahateerMuhammad](https://github.com/MahateerMuhammad)
 

@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:***REMOVED***/config/theme.dart';
-import 'package:***REMOVED***/models/verification_request.dart';
-import 'package:***REMOVED***/services/verification_service.dart';
+import 'package:madadgar/config/theme.dart';
+import 'package:madadgar/models/verification_request.dart';
+import 'package:madadgar/services/verification_service.dart';
 
 class VerificationSummaryScreen extends StatefulWidget {
   final File cnicImageFile;
@@ -71,7 +71,7 @@ class _VerificationSummaryScreenState extends State<VerificationSummaryScreen> {
         submittedAt: DateTime.now(),
       );
 
-      await _verificationService.submitVerificationRequest(
+      await _verificationService.submitLiveVerificationRequest(
         request: request,
         cnicImageFile: widget.cnicImageFile,
         faceImageFile: widget.faceImageFile,

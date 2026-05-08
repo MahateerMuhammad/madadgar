@@ -2,10 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:***REMOVED***/models/post.dart';
-import 'package:***REMOVED***/services/chat_service.dart';
-import 'package:***REMOVED***/services/user_service.dart'; // Make sure to import UserService
-import 'package:***REMOVED***/screens/chat/chat_screen.dart';
+import 'package:madadgar/models/post.dart';
+import 'package:madadgar/services/chat_service.dart';
+import 'package:madadgar/services/user_service.dart'; // Make sure to import UserService
+import 'package:madadgar/screens/chat/chat_screen.dart';
 
 class PostDetailChatWidget extends StatefulWidget {
   final PostModel post;
@@ -189,7 +189,7 @@ class _PostDetailChatWidgetState extends State<PostDetailChatWidget> {
         responderMessage: message,
         responderUserId: _currentUserId,    // Explicitly pass current user ID
         responderUserName: _currentUserName, // Pass the correct username
-        isPostAnonymous: widget.post.isAnonymous,
+        isPostAnonymous: widget.post.isPrivate,
       );
 
       debugPrint("Conversation created/retrieved: ${conversation.id}");

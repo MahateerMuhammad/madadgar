@@ -1,4 +1,4 @@
-package com.example.***REMOVED***
+package com.example.madadgar
 
 import io.flutter.embedding.android.FlutterActivity
 

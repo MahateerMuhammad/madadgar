@@ -3,11 +3,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:***REMOVED***/config/theme.dart';
-import 'package:***REMOVED***/services/verification_service.dart';
+import 'package:madadgar/config/theme.dart';
+import 'package:madadgar/services/verification_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 //import 'package:provider/provider.dart';
-import 'package:***REMOVED***/services/auth_service.dart';
+import 'package:madadgar/services/auth_service.dart';
 
 class VerificationScreen extends StatefulWidget {
   const VerificationScreen({super.key});
@@ -41,8 +41,10 @@ class _VerificationScreenState extends State<VerificationScreen> {
     });
     
     try {
-      final status = await _verificationService.getCurrentUserVerificationRequest();
-      final canSubmit = await _verificationService.canSubmitVerificationRequest();
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+      final status = await _verificationService.getCurrentUserVerificationRequest(user.uid);
+      final canSubmit = await _verificationService.canSubmitVerificationRequest(user.uid);
       
       setState(() {
         _verificationStatus = status;

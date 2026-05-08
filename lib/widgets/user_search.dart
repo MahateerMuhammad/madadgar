@@ -1,10 +1,10 @@
 //ignore_for_file: prefer_const_constructors, avoid_print, use_build_context_synchronously,deprecated_member_use, prefer_const_literals_to_create_immutables, unnecessary_null_comparison, avoid_unnecessary_containers, prefer_interpolation_to_compose_strings, unused_local_variable, prefer_final_fields, prefer_typing_uninitialized_variables, avoid_print, unnecessary_new, prefer_const_constructors_in_immutables
 
 import 'package:flutter/material.dart';
-import 'package:***REMOVED***/models/user.dart';
-import 'package:***REMOVED***/services/user_service.dart';
-import 'package:***REMOVED***/screens/profile/user_profile_screen.dart';
-import 'package:***REMOVED***/config/theme.dart';
+import 'package:madadgar/models/user.dart';
+import 'package:madadgar/services/user_service.dart';
+import 'package:madadgar/screens/profile/user_profile_screen.dart';
+import 'package:madadgar/config/theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class UserSearchWidget extends StatefulWidget {

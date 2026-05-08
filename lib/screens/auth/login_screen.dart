@@ -1,9 +1,9 @@
 //ignore_for_file: prefer_const_constructors, avoid_print, use_build_context_synchronously,deprecated_member_use, prefer_const_literals_to_create_immutables, unnecessary_null_comparison, avoid_unnecessary_containers, prefer_interpolation_to_compose_strings, unused_local_variable, prefer_final_fields, prefer_typing_uninitialized_variables, avoid_print, unnecessary_new, prefer_const_constructors_in_immutables
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:***REMOVED***/config/routes.dart';
-import 'package:***REMOVED***/screens/auth/forgot_screen_password.dart';
-import 'package:***REMOVED***/services/auth_service.dart';
+import 'package:madadgar/config/routes.dart';
+import 'package:madadgar/screens/auth/forgot_screen_password.dart';
+import 'package:madadgar/services/auth_service.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 class LoginScreen extends StatefulWidget {

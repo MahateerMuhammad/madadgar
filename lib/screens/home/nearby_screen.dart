@@ -3,15 +3,15 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:***REMOVED***/services/post_service.dart';
-import 'package:***REMOVED***/services/auth_service.dart';
-import 'package:***REMOVED***/models/post.dart';
-import 'package:***REMOVED***/screens/post/post_detail_screen.dart';
-import 'package:***REMOVED***/config/theme.dart';
+import 'package:madadgar/services/post_service.dart';
+import 'package:madadgar/services/auth_service.dart';
+import 'package:madadgar/models/post.dart';
+import 'package:madadgar/screens/post/post_detail_screen.dart';
+import 'package:madadgar/config/theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:***REMOVED***/models/user.dart';
-import 'package:***REMOVED***/services/user_service.dart';
-import 'package:***REMOVED***/widgets/report_dialog.dart';
+import 'package:madadgar/models/user.dart';
+import 'package:madadgar/services/user_service.dart';
+import 'package:madadgar/widgets/report_dialog.dart';
 
 class NearbyScreen extends StatefulWidget {
   const NearbyScreen({super.key});

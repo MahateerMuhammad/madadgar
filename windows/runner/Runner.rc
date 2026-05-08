@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "***REMOVED***" "\0"
+            VALUE "FileDescription", "madadgar" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "***REMOVED***" "\0"
+            VALUE "InternalName", "madadgar" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2025 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "***REMOVED***.exe" "\0"
-            VALUE "ProductName", "***REMOVED***" "\0"
+            VALUE "OriginalFilename", "madadgar.exe" "\0"
+            VALUE "ProductName", "madadgar" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

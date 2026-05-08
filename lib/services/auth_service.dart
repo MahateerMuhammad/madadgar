@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:***REMOVED***/config/constants.dart';
-import 'package:***REMOVED***/models/user.dart';
+import 'package:madadgar/config/constants.dart';
+import 'package:madadgar/models/user.dart';
 import 'package:provider/provider.dart';
 
 class AuthService extends ChangeNotifier {

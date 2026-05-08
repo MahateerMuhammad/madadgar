@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:***REMOVED***/models/post.dart';
-import 'package:***REMOVED***/models/user.dart';
+import 'package:madadgar/models/post.dart';
 
 class SeedingService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

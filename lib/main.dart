@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:***REMOVED***/config/theme.dart';
+import 'package:madadgar/config/theme.dart';
 
-import 'package:***REMOVED***/screens/auth/login_screen.dart';
-import 'package:***REMOVED***/screens/auth/register_screen.dart';
-import 'package:***REMOVED***/config/routes.dart';
-import 'package:***REMOVED***/screens/home/home_screen.dart';
+import 'package:madadgar/screens/auth/login_screen.dart';
+import 'package:madadgar/screens/auth/register_screen.dart';
+import 'package:madadgar/config/routes.dart';
+import 'package:madadgar/screens/home/home_screen.dart';
 
 import 'package:provider/provider.dart';
-import 'package:***REMOVED***/services/auth_service.dart';
-import 'package:***REMOVED***/services/post_service.dart';
+import 'package:madadgar/services/auth_service.dart';
+import 'package:madadgar/services/post_service.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:***REMOVED***/firebase_options.dart';
+import 'package:madadgar/firebase_options.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 Future<void> main() async {

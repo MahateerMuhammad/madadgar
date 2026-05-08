@@ -1,9 +1,10 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
-import 'package:***REMOVED***/config/theme.dart';
-import 'package:***REMOVED***/screens/verification/liveness_screen.dart';
+import 'package:madadgar/config/theme.dart';
+import 'package:madadgar/screens/verification/liveness_screen.dart';
 
 class CnicScanScreen extends StatefulWidget {
   const CnicScanScreen({super.key});
@@ -22,8 +23,6 @@ class _CnicScanScreenState extends State<CnicScanScreen> {
   // Extracted Data
   String _cnicNumber = '';
   String _dateOfBirth = '';
-  String _issueDate = '';
-  String _expiryDate = '';
 
   @override
   void initState() {

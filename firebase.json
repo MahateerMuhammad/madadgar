@@ -3,14 +3,14 @@
     "platforms": {
       "android": {
         "default": {
-          "projectId": "***REMOVED***-f2760",
+          "projectId": "madadgar-f2760",
           "appId": "1:543085921164:android:fc7f037c90aea586bc8ca9",
           "fileOutput": "android/app/google-services.json"
         }
       },
       "dart": {
         "lib/firebase_options.dart": {
-          "projectId": "***REMOVED***-f2760",
+          "projectId": "madadgar-f2760",
           "configurations": {
             "android": "1:543085921164:android:fc7f037c90aea586bc8ca9",
             "ios": "1:543085921164:ios:d367fa9e23b1da61bc8ca9",

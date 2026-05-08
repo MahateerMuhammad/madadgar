@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:***REMOVED***/models/post.dart';
+import 'package:madadgar/models/post.dart';
 
 class PostService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

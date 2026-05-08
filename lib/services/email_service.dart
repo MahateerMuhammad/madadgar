@@ -1,8 +1,8 @@
 // import 'package:cloud_firestore/cloud_firestore.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:flutter/material.dart';
-// import 'package:***REMOVED***/config/constants.dart';
-// import 'package:***REMOVED***/models/user.dart';
+// import 'package:madadgar/config/constants.dart';
+// import 'package:madadgar/models/user.dart';
 
 // class EmailService {
 //   // Template for verification request email to admin

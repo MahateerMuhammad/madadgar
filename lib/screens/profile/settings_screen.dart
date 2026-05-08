@@ -2,14 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:***REMOVED***/config/theme.dart';
-import 'package:***REMOVED***/screens/auth/login_screen.dart';
-import 'package:***REMOVED***/screens/post/my_posts_screen.dart';
-import 'package:***REMOVED***/screens/profile/help_screen.dart';
-import 'package:***REMOVED***/services/user_service.dart';
-import 'package:***REMOVED***/screens/home/about.dart';
-import 'package:***REMOVED***/screens/auth/forgot_screen_password.dart';
-import 'package:***REMOVED***/screens/verification/verification_screen.dart';
+import 'package:madadgar/config/theme.dart';
+import 'package:madadgar/screens/auth/login_screen.dart';
+import 'package:madadgar/screens/post/my_posts_screen.dart';
+import 'package:madadgar/screens/profile/help_screen.dart';
+import 'package:madadgar/services/user_service.dart';
+import 'package:madadgar/screens/home/about.dart';
+import 'package:madadgar/screens/auth/forgot_screen_password.dart';
+import 'package:madadgar/screens/verification/verification_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -368,7 +368,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              "Contact: support@***REMOVED***.com",
+              "Contact: support@madadgar.com",
               style: TextStyle(color: Colors.grey[600]),
             ),
           ],

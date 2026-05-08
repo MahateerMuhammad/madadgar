@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import 'package:***REMOVED***/models/chat.dart';
-import 'package:***REMOVED***/services/user_service.dart'; // Add this import
+import 'package:madadgar/models/chat.dart';
+import 'package:madadgar/services/user_service.dart'; // Add this import
 
 class ChatService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

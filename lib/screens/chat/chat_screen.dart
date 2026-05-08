@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:***REMOVED***/models/chat.dart';
-import 'package:***REMOVED***/services/chat_service.dart';
-import 'package:***REMOVED***/models/post.dart';
+import 'package:madadgar/models/chat.dart';
+import 'package:madadgar/services/chat_service.dart';
+import 'package:madadgar/models/post.dart';
 
 class ChatScreen extends StatefulWidget {
   final ChatConversation conversation;
@@ -63,7 +63,7 @@ class _ChatScreenState extends State<ChatScreen> {
 void _determineAnonymity() {
   // If post is provided, check its anonymous property
   if (widget.post != null) {
-    _isAnonymousChat = widget.post!.isAnonymous;
+    _isAnonymousChat = widget.post!.isPrivate;
     return;
   }
   

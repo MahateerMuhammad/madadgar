@@ -1,6 +1,6 @@
 // ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
-import 'package:***REMOVED***/config/theme.dart';
+import 'package:madadgar/config/theme.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;

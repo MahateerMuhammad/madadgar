@@ -2,15 +2,16 @@
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:***REMOVED***/config/theme.dart';
-import 'package:***REMOVED***/models/user.dart';
-import 'package:***REMOVED***/models/post.dart';
-import 'package:***REMOVED***/services/user_service.dart';
-import 'package:***REMOVED***/services/post_service.dart';
+import 'package:madadgar/config/theme.dart';
+import 'package:madadgar/models/user.dart';
+import 'package:madadgar/models/post.dart';
+import 'package:madadgar/services/user_service.dart';
+import 'package:madadgar/services/post_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:***REMOVED***/screens/post/post_detail_screen.dart';
-import 'package:***REMOVED***/screens/profile/user_report_screen.dart';
-import 'package:***REMOVED***/screens/verification/cnic_scan_screen.dart';
+import 'package:madadgar/screens/profile/user_report_screen.dart';
+import 'package:madadgar/screens/verification/cnic_scan_screen.dart';
+import 'package:madadgar/widgets/post_card.dart';
+import 'package:madadgar/screens/post/post_detail_screen.dart';
 
 class UserProfileScreen extends StatefulWidget {
   final String userId;
@@ -434,7 +435,17 @@ class _UserProfileScreenState extends State<UserProfileScreen> with SingleTicker
           padding: const EdgeInsets.all(12.0),
           itemCount: posts.length,
           itemBuilder: (context, index) {
-            return _buildPostCard(posts[index], fontFamily);
+            return PostCard(
+              post: posts[index],
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => PostDetailScreen(post: posts[index]),
+                  ),
+                );
+              },
+            );
           },
         );
       },

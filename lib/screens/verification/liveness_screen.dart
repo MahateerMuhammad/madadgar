@@ -1,9 +1,10 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
-import 'package:***REMOVED***/config/theme.dart';
-import 'package:***REMOVED***/screens/verification/verification_summary_screen.dart';
+import 'package:madadgar/config/theme.dart';
+import 'package:madadgar/screens/verification/verification_summary_screen.dart';
 
 class LivenessScreen extends StatefulWidget {
   final File cnicImageFile;

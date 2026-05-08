@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:***REMOVED***/models/post.dart';
-import 'package:***REMOVED***/services/post_service.dart';
-import 'package:***REMOVED***/config/theme.dart';
+import 'package:madadgar/models/post.dart';
+import 'package:madadgar/services/post_service.dart';
+import 'package:madadgar/config/theme.dart';
 
 class EditPostScreen extends StatefulWidget {
   final PostModel post;

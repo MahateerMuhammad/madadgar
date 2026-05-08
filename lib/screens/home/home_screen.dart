@@ -1,19 +1,19 @@
 //ignore_for_file: prefer_const_constructors, avoid_print, use_build_context_synchronously,deprecated_member_use, prefer_const_literals_to_create_immutables, unnecessary_null_comparison, avoid_unnecessary_containers, prefer_interpolation_to_compose_strings, unused_local_variable, prefer_final_fields, prefer_typing_uninitialized_variables, avoid_print, unnecessary_new, prefer_const_constructors_in_immutables
 
 import 'package:flutter/material.dart';
-import 'package:***REMOVED***/screens/home/nearby_screen.dart';
-import 'package:***REMOVED***/screens/profile/help_screen.dart';
+import 'package:madadgar/screens/home/nearby_screen.dart';
+import 'package:madadgar/screens/profile/help_screen.dart';
 import 'package:provider/provider.dart';
-import 'package:***REMOVED***/config/constants.dart';
-import 'package:***REMOVED***/config/theme.dart';
-import 'package:***REMOVED***/services/auth_service.dart';
-import 'package:***REMOVED***/screens/home/feed_screen.dart';
-import 'package:***REMOVED***/screens/post/create_post_screen.dart';
-import 'package:***REMOVED***/screens/profile/profile_screen.dart';
-import 'package:***REMOVED***/screens/chat/conversation_list.dart';
-import 'package:***REMOVED***/screens/home/about.dart';
-import 'package:***REMOVED***/screens/profile/settings_screen.dart';
-import 'package:***REMOVED***/screens/post/my_posts_screen.dart';
+import 'package:madadgar/config/constants.dart';
+import 'package:madadgar/config/theme.dart';
+import 'package:madadgar/services/auth_service.dart';
+import 'package:madadgar/screens/home/feed_screen.dart';
+import 'package:madadgar/screens/post/create_post_screen.dart';
+import 'package:madadgar/screens/profile/profile_screen.dart';
+import 'package:madadgar/screens/chat/conversation_list.dart';
+import 'package:madadgar/screens/home/about.dart';
+import 'package:madadgar/screens/profile/settings_screen.dart';
+import 'package:madadgar/screens/post/my_posts_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

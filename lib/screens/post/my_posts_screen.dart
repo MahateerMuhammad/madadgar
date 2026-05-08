@@ -2,12 +2,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:***REMOVED***/services/post_service.dart';
-import 'package:***REMOVED***/models/post.dart';
-//import 'package:***REMOVED***/widgets/post_card.dart';
-import 'package:***REMOVED***/screens/post/post_detail_screen.dart';
-import 'package:***REMOVED***/config/theme.dart';
-import 'package:***REMOVED***/screens/post/edit_post_screen.dart';
+import 'package:madadgar/services/post_service.dart';
+import 'package:madadgar/models/post.dart';
+//import 'package:madadgar/widgets/post_card.dart';
+import 'package:madadgar/screens/post/post_detail_screen.dart';
+import 'package:madadgar/config/theme.dart';
+import 'package:madadgar/screens/post/edit_post_screen.dart';
 
 class MyPostsScreen extends StatefulWidget {
   const MyPostsScreen({super.key});

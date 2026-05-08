@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:***REMOVED***/config/theme.dart';
+import 'package:madadgar/config/theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AboutScreen extends StatelessWidget {
@@ -645,7 +645,7 @@ Widget _buildTeamMember({
               _buildContactItem(
                 icon: Icons.photo_camera_outlined,
                 title: 'Instagram',
-                value: '@***REMOVED***_community',
+                value: '@madadgar_community',
                 onTap: () => _launchUrl('https://instagram.com'),
                 fontFamily: fontFamily,
                 primaryColor: primaryColor,

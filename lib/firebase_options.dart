@@ -45,9 +45,9 @@ class DefaultFirebaseOptions {
     apiKey: dotenv.env['FIREBASE_API_KEY_WEB'] ?? '',
     appId: '1:543085921164:web:a229a29630f07981bc8ca9',
     messagingSenderId: '543085921164',
-    projectId: '***REMOVED***-f2760',
-    authDomain: '***REMOVED***-f2760.firebaseapp.com',
-    storageBucket: '***REMOVED***-f2760.firebasestorage.app',
+    projectId: 'madadgar-f2760',
+    authDomain: 'madadgar-f2760.firebaseapp.com',
+    storageBucket: 'madadgar-f2760.firebasestorage.app',
     measurementId: 'G-R4PCRKGL4P',
   );
 
@@ -55,35 +55,35 @@ class DefaultFirebaseOptions {
     apiKey: dotenv.env['FIREBASE_API_KEY_ANDROID'] ?? '',
     appId: '1:543085921164:android:fc7f037c90aea586bc8ca9',
     messagingSenderId: '543085921164',
-    projectId: '***REMOVED***-f2760',
-    storageBucket: '***REMOVED***-f2760.firebasestorage.app',
+    projectId: 'madadgar-f2760',
+    storageBucket: 'madadgar-f2760.firebasestorage.app',
   );
 
   static FirebaseOptions get ios => FirebaseOptions(
     apiKey: dotenv.env['FIREBASE_API_KEY_IOS'] ?? '',
     appId: '1:543085921164:ios:d367fa9e23b1da61bc8ca9',
     messagingSenderId: '543085921164',
-    projectId: '***REMOVED***-f2760',
-    storageBucket: '***REMOVED***-f2760.firebasestorage.app',
-    iosBundleId: 'com.example.***REMOVED***',
+    projectId: 'madadgar-f2760',
+    storageBucket: 'madadgar-f2760.firebasestorage.app',
+    iosBundleId: 'com.example.madadgar',
   );
 
   static FirebaseOptions get macos => FirebaseOptions(
     apiKey: dotenv.env['FIREBASE_API_KEY_MACOS'] ?? '',
     appId: '1:543085921164:ios:d367fa9e23b1da61bc8ca9',
     messagingSenderId: '543085921164',
-    projectId: '***REMOVED***-f2760',
-    storageBucket: '***REMOVED***-f2760.firebasestorage.app',
-    iosBundleId: 'com.example.***REMOVED***',
+    projectId: 'madadgar-f2760',
+    storageBucket: 'madadgar-f2760.firebasestorage.app',
+    iosBundleId: 'com.example.madadgar',
   );
 
   static FirebaseOptions get windows => FirebaseOptions(
     apiKey: dotenv.env['FIREBASE_API_KEY_WINDOWS'] ?? '',
     appId: '1:543085921164:web:22b0457eee0397c5bc8ca9',
     messagingSenderId: '543085921164',
-    projectId: '***REMOVED***-f2760',
-    authDomain: '***REMOVED***-f2760.firebaseapp.com',
-    storageBucket: '***REMOVED***-f2760.firebasestorage.app',
+    projectId: 'madadgar-f2760',
+    authDomain: 'madadgar-f2760.firebaseapp.com',
+    storageBucket: 'madadgar-f2760.firebasestorage.app',
     measurementId: 'G-17X5KBMP0Q',
   );
 }

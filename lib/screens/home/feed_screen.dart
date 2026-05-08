@@ -3,18 +3,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:***REMOVED***/config/constants.dart';
-import 'package:***REMOVED***/config/theme.dart';
-import 'package:***REMOVED***/models/post.dart';
-import 'package:***REMOVED***/services/post_service.dart';
-//import 'package:***REMOVED***/services/auth_service.dart';
+import 'package:madadgar/config/constants.dart';
+import 'package:madadgar/config/theme.dart';
+import 'package:madadgar/models/post.dart';
+import 'package:madadgar/services/post_service.dart';
+//import 'package:madadgar/services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:***REMOVED***/screens/post/post_detail_screen.dart';
-import 'package:***REMOVED***/models/user.dart';
-import 'package:***REMOVED***/services/user_service.dart';
-import 'package:***REMOVED***/widgets/report_dialog.dart';
-import 'package:***REMOVED***/services/report_service.dart';
-import 'package:***REMOVED***/widgets/user_search.dart';
+import 'package:madadgar/screens/post/post_detail_screen.dart';
+import 'package:madadgar/models/user.dart';
+import 'package:madadgar/services/user_service.dart';
+import 'package:madadgar/widgets/report_dialog.dart';
+import 'package:madadgar/services/report_service.dart';
+import 'package:madadgar/widgets/user_search.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});

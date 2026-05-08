@@ -2,9 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:***REMOVED***/models/post.dart';
-import 'package:***REMOVED***/screens/post/post_detail_screen.dart';
-import 'package:***REMOVED***/services/post_service.dart';
+import 'package:madadgar/models/post.dart';
+import 'package:madadgar/screens/post/post_detail_screen.dart';
+import 'package:madadgar/services/post_service.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
